@@ -1,6 +1,5 @@
 from fastapi.responses import JSONResponse
-from dataclasses import is_dataclass, asdict
-from pydantic import BaseModel
+from fastapi.encoders import jsonable_encoder
 
 
 class Response:
@@ -10,14 +9,9 @@ class Response:
     @classmethod
     def success_response(cls, data, message, status_code):
 
-        if is_dataclass(data):
-            data = asdict(data)
-        elif isinstance(data, BaseModel):
-            data = data.model_dump()
-
         return JSONResponse(
             status_code=status_code,
-            content={"Status": "Success", "Message": message, "Data": data},
+            content={"Status": "Success", "Message": message, "Data": jsonable_encoder(data)},
         )
 
     @classmethod

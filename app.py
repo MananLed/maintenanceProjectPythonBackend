@@ -1,12 +1,15 @@
+from fastapi import FastAPI
 from internal.handler.user_handler import user_router
 from internal.handler.auth_handler import auth_router
-from fastapi import FastAPI
+from internal.handler.society_handler import society_router
+from internal.handler.feedback_handler import feedback_router
 
 app = FastAPI()
 
 app.include_router(auth_router)
 app.include_router(user_router)
-
+app.include_router(society_router)
+app.include_router(feedback_router)
 
 
 # @app.post("/user")

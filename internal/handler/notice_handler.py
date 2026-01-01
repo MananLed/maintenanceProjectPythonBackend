@@ -1,8 +1,8 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends, Request
 from internal.dto.notice import NoticeInput
+from internal.utils.jwt import verify_jwt
 
-
-notice_router = APIRouter()
+notice_router = APIRouter(dependencies=[Depends(verify_jwt)])
 
 
 @notice_router.post("/notices/issue")

@@ -1,12 +1,14 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Request, Depends
 from internal.dto.user import OfficerDetails
+from internal.utils.jwt import verify_jwt
 
 
-society_router = APIRouter()
+
+society_router = APIRouter(dependencies=[Depends(verify_jwt)])
 
 
 @society_router.get("/society/residents")
-def get_residents():
+def get_residents(request: Request):
     pass
 
 

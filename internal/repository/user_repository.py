@@ -120,11 +120,14 @@ class UserRepository:
         for item in items:
             user_details = {k: self.deserializer.deserialize(v) for k, v in item.items()}
 
+
         user: User = User(user_details.get("first_name"), user_details.get("middle_name"), 
                           user_details.get("last_name"), user_details.get("mobile_number"), user_details.get("email"), 
                           user_details.get("flat"), user_details.get("password"), user_details.get("role"), user_details.get("id"))
 
         return user
+    
+    
 
 
 # def change_password(id, role, email, new_hashed_password):

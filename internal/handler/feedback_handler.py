@@ -1,7 +1,8 @@
 from fastapi import APIRouter
-from models.feedback import FeedbackInput
+from internal.dto.feedback import FeedbackInput
 
 feedback_router = APIRouter()
+
 
 @feedback_router.post("/feedbacks/request")
 def post_feedback(feedback_input: FeedbackInput):
@@ -10,5 +11,4 @@ def post_feedback(feedback_input: FeedbackInput):
 
 @feedback_router.get("/feedbacks")
 def get_all_feedbacks():
-    pass 
-
+    pass

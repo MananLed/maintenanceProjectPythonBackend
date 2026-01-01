@@ -1,5 +1,4 @@
 from dataclasses import dataclass, field
-from pydantic import BaseModel, Field
 from uuid import UUID, uuid4
 
 
@@ -18,15 +17,3 @@ class Feedback:
     id: UUID = field(metadata={"json": "id"}, default_factory=uuid4)
 
 
-class FeedbackInput(BaseModel):
-
-    model_config = {
-        "populate_by_name": True,
-        "extra": "forbid",
-        "str_strip_whitespace": True,
-        "validate_assignment": True,
-    }
-
-    rating: int = Field(min=1, max=5, alias="rating")
-    content: str = Field(default="", alias="content")
-    request_id: str = Field(alias="requestid")

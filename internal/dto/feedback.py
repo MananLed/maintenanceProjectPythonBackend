@@ -9,6 +9,6 @@ class FeedbackInput(BaseModel):
         "validate_assignment": True,
     }
 
-    rating: int = Field(min=1, max=5, alias="rating")
+    rating: int = Field(ge=1, le=5, alias="rating")
     content: str = Field(default="", max_length=500, alias="content")
     request_id: str = Field(alias="requestid")

@@ -13,10 +13,12 @@ class UserService:
     def get_all_users(self):
         self.user_repository.get_all_user_details()
 
-    def get_user_by_email_and_password(self, login_request: LoginInput):
+    async def get_user_by_email_and_password(self, login_request: LoginInput):
 
         try:
-            user: User = self.user_repository.get_user_by_email(login_request.email)
+            user: User = await self.user_repository.get_user_by_email(
+                login_request.email
+            )
         except HTTPException as exception:
             raise exception
         except Exception as exception:
@@ -30,7 +32,7 @@ class UserService:
         access_token = create_jwt_token(user.id, user.role, user.email, user.flat)
 
         return {"token": access_token, "email": user.email, "role": user.role}
-    
+
     def get_user_by_email(self, email):
         try:
             user: User = self.user_repository.get_user_by_email(email)
@@ -38,5 +40,5 @@ class UserService:
             raise exception
         except Exception as exception:
             raise exception
-        
+
         return user

@@ -11,7 +11,7 @@ class Response:
 
         return JSONResponse(
             status_code=status_code,
-            content={"Status": "Success", "Message": message, "Data": jsonable_encoder(data)},
+            content={"status": "Success", "message": message, "data": jsonable_encoder(data)},
         )
 
     @classmethod
@@ -19,8 +19,8 @@ class Response:
         return JSONResponse(
             status_code=status_code,
             content={
-                "Status": "fail",
-                "Message": error_message,
-                "ErrorCode": cls.response_code_mapping.get(status_code, 1011),
+                "status": "fail",
+                "message": error_message,
+                "errorcode": cls.response_code_mapping.get(status_code, 1011),
             },
         )

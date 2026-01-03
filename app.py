@@ -1,16 +1,23 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from internal.handler.user_handler import user_router
 from internal.handler.auth_handler import auth_router
 from internal.handler.society_handler import society_router
 from internal.handler.feedback_handler import feedback_router
+from internal.handler.notice_handler import notice_router
+
 
 app = FastAPI()
+
+origins = ["*"]
+
+app.add_middleware(CORSMiddleware, allow_origins=origins, allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
 
 app.include_router(auth_router)
 app.include_router(user_router)
 app.include_router(society_router)
 app.include_router(feedback_router)
-
+app.include_router(notice_router)
 
 # @app.post("/user")
 # async def create_user(user_input: SignUpInput):

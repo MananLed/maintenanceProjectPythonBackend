@@ -1,5 +1,6 @@
 from internal.models.user import User
 from fastapi import status, HTTPException
+import asyncio
 
 class UserRepository:
     def __init__(self, ddb_connection, table_name, deserializer):
@@ -99,15 +100,14 @@ class UserRepository:
         #     except Exception:
         #         raise Exception
 
-    def get_user_by_email(self, email: str):
+    async def get_user_by_email(self, email: str):
         statement = f"SELECT * FROM {self.table_name} WHERE PK = ? AND begins_with(SK, ?)"
 
         try:
-            response = self.dynamodb.execute_statement(
-                Statement=f"""
-                    {statement}
-                """,
-                Parameters=[{"S": "USERS"}, {"S": email}],
+            response = await asyncio.to_thread(
+                self.dynamodb.execute_statement,
+                Statement=statement,
+                Parameters=[{"S": "USERS"}, {"S": email}]
             )
         except Exception:
             raise HTTPException(status_code = status.HTTP_500_INTERNAL_SERVER_ERROR, detail = "Server Error")

@@ -5,9 +5,9 @@ class NoticeService:
     def __init__(self):
         self.notice_repository = notice_repository_instance
 
-    def get_all_notices(self):
+    async def get_all_notices(self):
         try:
-            notices = self.notice_repository.get_all_notices()
+            notices = await self.notice_repository.get_all_notices()
         except HTTPException as exception:
             raise exception 
         except Exception as exception:
@@ -15,9 +15,9 @@ class NoticeService:
         
         return notices
     
-    def get_all_notices_by_month_and_year(self, year: int, month: int | None = None):
+    async def get_all_notices_by_month_and_year(self, year: int, month: int | None = None):
         try:
-            notices = self.notice_repository.get_all_notices_by_month_and_year(year, month)
+            notices = await self.notice_repository.get_all_notices_by_month_and_year(year, month)
         except HTTPException as exception:
             raise exception
         except Exception as exception:

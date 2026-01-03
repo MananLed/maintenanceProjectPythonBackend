@@ -15,12 +15,12 @@ user_router = APIRouter(dependencies=[Depends(verify_jwt)])
 
 
 @user_router.get("/profile")
-def get_profile(request: Request):
+async def get_profile(request: Request):
 
     claims = request.state.user
 
     try:
-        user: User = user_service_instance.get_user_by_email(claims.get("email"))
+        user: User = await user_service_instance.get_user_by_email(claims.get("email"))
     except HTTPException as exception:
         return Response.error_response(exception.detail, exception.status_code)
     except Exception as exception:

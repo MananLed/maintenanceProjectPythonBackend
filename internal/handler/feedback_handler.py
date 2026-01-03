@@ -15,9 +15,9 @@ def post_feedback(feedback_input: FeedbackInput):
 
 
 @feedback_router.get("/feedbacks")
-def get_all_feedbacks():
+async def get_all_feedbacks():
     try:
-        feedbacks = feedback_service_instance.get_all_feedbacks()
+        feedbacks = await feedback_service_instance.get_all_feedbacks()
     except HTTPException as exception:
         return Response.error_response(exception.detail, exception.status_code)
     except Exception as exception:

@@ -16,9 +16,9 @@ def issue_notice(notice_input: NoticeInput):
 
 
 @notice_router.get("/notices")
-def get_all_notices():
+async def get_all_notices():
     try:
-        notices = notice_service_instance.get_all_notices()
+        notices = await notice_service_instance.get_all_notices()
     except HTTPException as exception:
         return Response.error_response(exception.detail, exception.status_code)
     except Exception as exception:
@@ -28,9 +28,9 @@ def get_all_notices():
 
 
 @notice_router.get("/notices/month-year")
-def get_notices_by_month_year(year: Annotated[int, Query(gt=0)], month: Annotated[int | None, Query(gt=0, lt=13)] = None):
+async def get_notices_by_month_year(year: Annotated[int, Query(gt=0)], month: Annotated[int | None, Query(gt=0, lt=13)] = None):
     try:
-        notices = notice_service_instance.get_all_notices_by_month_and_year(year, month)
+        notices = await notice_service_instance.get_all_notices_by_month_and_year(year, month)
     except HTTPException as exception:
         return Response.error_response(exception.detail, exception.status_code)
     except Exception as exception:

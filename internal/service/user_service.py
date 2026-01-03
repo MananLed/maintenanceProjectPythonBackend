@@ -33,9 +33,9 @@ class UserService:
 
         return {"token": access_token, "email": user.email, "role": user.role}
 
-    def get_user_by_email(self, email):
+    async def get_user_by_email(self, email):
         try:
-            user: User = self.user_repository.get_user_by_email(email)
+            user: User = await self.user_repository.get_user_by_email(email)
         except HTTPException as exception:
             raise exception
         except Exception as exception:

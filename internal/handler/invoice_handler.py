@@ -15,9 +15,9 @@ def issue_invoice(invoice_input: InvoiceInput):
 
 
 @invoice_router.get("/invoices/month-year")
-def get_invoices_month_year(year: Annotated[int, Query(ge=0)], month: Annotated[int | None, Query(gt=0, lt=13)] = None):
+async def get_invoices_month_year(year: Annotated[int, Query(ge=0)], month: Annotated[int | None, Query(gt=0, lt=13)] = None):
     try:
-        invoices = invoice_service_instance.get_all_invoices_by_month_and_year(year, month)
+        invoices = await invoice_service_instance.get_all_invoices_by_month_and_year(year, month)
     except HTTPException as exception:
         return Response.error_response(exception.detail, exception.status_code)
     except Exception as exception:

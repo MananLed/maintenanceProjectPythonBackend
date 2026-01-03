@@ -6,9 +6,9 @@ class SocietyService:
     def __init__(self):
         self.society_repository = society_repository_instance
 
-    def get_all_users_by_role(self, role: UserRole):
+    async def get_all_users_by_role(self, role: UserRole):
         try:
-            users = self.society_repository.get_all_users_by_role(role)
+            users = await self.society_repository.get_all_users_by_role(role)
         except HTTPException as exception:
             raise exception 
         except Exception as exception:

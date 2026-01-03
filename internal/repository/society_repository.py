@@ -1,7 +1,7 @@
 from fastapi import HTTPException, status
 from typing import List
 from internal.models.user import User, UserRole
-
+import asyncio
 
 class SocietyRepository:
     def __init__(self, ddb_connection, table_name, deserializer):
@@ -9,11 +9,12 @@ class SocietyRepository:
         self.dynamodb = ddb_connection
         self.table_name = table_name
 
-    def get_all_users_by_role(self, role: UserRole):
+    async def get_all_users_by_role(self, role: UserRole):
         try:
-            response = self.dynamodb.execute_statement(
+            response = await asyncio.to_thread(
+                self.dynamodb.execute_statement,
                 Statement=f"SELECT * FROM {self.table_name} WHERE PK = ?",
-                Parameters=[{"S": ("ROLE#" + role)}],
+                Parameters=[{"S": ("ROLE#" + role)}]
             )
         except:
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal Server Error")

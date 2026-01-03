@@ -1,7 +1,7 @@
 from fastapi import HTTPException, status 
 from typing import List 
 from internal.models.feedback import Feedback
-
+import asyncio
 
 class FeedbackRepository:
     def __init__(self, ddb_connection, table_name, deserializer):
@@ -9,11 +9,12 @@ class FeedbackRepository:
         self.dynamodb = ddb_connection
         self.table_name = table_name
 
-    def get_all_feedbacks(self):
+    async def get_all_feedbacks(self):
         try:
-            response = self.dynamodb.execute_statement(
+            response = await asyncio.to_thread(
+                self.dynamodb.execute_statement,
                 Statement=f"SELECT * FROM {self.table_name} WHERE PK = ?",
-                Parameters=[{"S": "FEEDBACKS"}],
+                Parameters=[{"S": "FEEDBACKS"}]
             )
         except:
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal Server Error")

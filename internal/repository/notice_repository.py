@@ -3,6 +3,7 @@ from datetime import datetime
 from typing import List
 from internal.models.notice import Notice
 import uuid
+import asyncio
 
 
 class NoticeRepository:
@@ -12,11 +13,12 @@ class NoticeRepository:
         self.table_name = table_name
 
     
-    def get_all_notices(self):
+    async def get_all_notices(self):
         try:
-            response = self.dynamodb.execute_statement(
+            response = await asyncio.to_thread(
+                self.dynamodb.execute_statement,
                 Statement=f"SELECT * FROM {self.table_name} WHERE PK = ?",
-                Parameters=[{"S": "NOTICES"}],
+                Parameters=[{"S": "NOTICES"}]
             )
         except:
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal Server Error")
@@ -39,20 +41,22 @@ class NoticeRepository:
 
         return notices
     
-    def get_all_notices_by_month_and_year(self, year:int, month: int | None = None):
+    async def get_all_notices_by_month_and_year(self, year:int, month: int | None = None):
         if month is not None:
             try:
-                response = self.dynamodb.execute_statement(
+                response = await asyncio.to_thread(
+                    self.dynamodb.execute_statement,
                     Statement=f"SELECT * FROM {self.table_name} WHERE PK = ? AND begins_with(SK, ?)",
-                    Parameters=[{"S": "NOTICES"}, {"S": (str(year) + "#" + str(month))}],
+                    Parameters=[{"S": "NOTICES"}, {"S": (str(year) + "#" + str(month))}]
                 )
             except:
                 raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal Server Error")
         else:
             try:
-                response = self.dynamodb.execute_statement(
+                response = await asyncio.to_thread(
+                    self.dynamodb.execute_statement,
                     Statement=f"SELECT * FROM {self.table_name} WHERE PK = ? AND begins_with(SK, ?)",
-                    Parameters=[{"S": "NOTICES"}, {"S": str(year)}],
+                    Parameters=[{"S": "NOTICES"}, {"S": str(year)}]
                 )
             except:
                 raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal Server Error")

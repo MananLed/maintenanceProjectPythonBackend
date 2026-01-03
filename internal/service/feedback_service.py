@@ -5,9 +5,9 @@ class FeedbackService:
     def __init__(self):
         self.feedback_repository = feedback_repository_instance
 
-    def get_all_feedbacks(self):
+    async def get_all_feedbacks(self):
         try:
-            feedbacks = self.feedback_repository.get_all_feedbacks()
+            feedbacks = await self.feedback_repository.get_all_feedbacks()
         except HTTPException as exception:
             raise exception 
         except Exception as exception:

@@ -5,6 +5,8 @@ from internal.handler.auth_handler import auth_router
 from internal.handler.society_handler import society_router
 from internal.handler.feedback_handler import feedback_router
 from internal.handler.notice_handler import notice_router
+from internal.handler.invoice_handler import invoice_router
+from internal.handler.request_handler import request_router
 
 
 app = FastAPI()
@@ -18,6 +20,9 @@ app.include_router(user_router)
 app.include_router(society_router)
 app.include_router(feedback_router)
 app.include_router(notice_router)
+app.include_router(invoice_router)
+app.include_router(request_router)
+
 
 # @app.post("/user")
 # async def create_user(user_input: SignUpInput):

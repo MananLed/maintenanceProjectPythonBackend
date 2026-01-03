@@ -13,14 +13,14 @@ society_router = APIRouter(dependencies=[Depends(verify_jwt)])
 
 
 @society_router.get("/society/residents")
-def get_residents(request: Request):
+async def get_residents(request: Request):
     claims = request.state.user
 
     if claims.get("role") != UserRole.ROLEADMIN:
         return Response.error_response("Unauthorized access", HTTPStatus.UNAUTHORIZED)
     
     try:
-        residents = society_service_instance.get_all_users_by_role(UserRole.ROLERESIDENT)
+        residents = await society_service_instance.get_all_users_by_role(UserRole.ROLERESIDENT)
     except HTTPException as exception:
         return Response.error_response(exception.detail, exception.status_code)
     except Exception as exception:
@@ -33,14 +33,14 @@ def get_residents(request: Request):
 
 
 @society_router.get("/society/officers")
-def get_officers(request: Request):
+async def get_officers(request: Request):
     claims = request.state.user
 
     if claims.get("role") != UserRole.ROLEADMIN:
         return Response.error_response("Unauthorized access", HTTPStatus.UNAUTHORIZED)
     
     try:
-        officers = society_service_instance.get_all_users_by_role(UserRole.ROLEOFFICER)
+        officers = await society_service_instance.get_all_users_by_role(UserRole.ROLEOFFICER)
     except HTTPException as exception:
         return Response.error_response(exception.detail, exception.status_code)
     except Exception as exception:
@@ -65,14 +65,14 @@ def add_officer(officer_details_input: OfficerDetails):
 
 
 @society_router.get("/society/residents/count")
-def get_resident_count(request: Request):
+async def get_resident_count(request: Request):
     claims = request.state.user
 
     if claims.get("role") != UserRole.ROLEADMIN:
         return Response.error_response("Unauthorized access", HTTPStatus.UNAUTHORIZED)
     
     try:
-        residents = society_service_instance.get_all_users_by_role(UserRole.ROLERESIDENT)
+        residents = await society_service_instance.get_all_users_by_role(UserRole.ROLERESIDENT)
     except HTTPException as exception:
         return Response.error_response(exception.detail, exception.status_code)
     except Exception as exception:
@@ -84,14 +84,14 @@ def get_resident_count(request: Request):
 
 
 @society_router.get("/society/officers/count")
-def get_officer_count(request: Request):
+async def get_officer_count(request: Request):
     claims = request.state.user
 
     if claims.get("role") != UserRole.ROLEADMIN:
         return Response.error_response("Unauthorized access", HTTPStatus.UNAUTHORIZED)
     
     try:
-        officers = society_service_instance.get_all_users_by_role(UserRole.ROLEOFFICER)
+        officers = await society_service_instance.get_all_users_by_role(UserRole.ROLEOFFICER)
     except HTTPException as exception:
         return Response.error_response(exception.detail, exception.status_code)
     except Exception as exception:

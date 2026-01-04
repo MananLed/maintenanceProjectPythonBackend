@@ -1,7 +1,7 @@
 from fastapi import status, APIRouter
 from internal.dto.user import (
     LoginInput,
-    SignUpInput,
+    SignInInput,
 )
 from internal.response.response import Response
 from http import HTTPStatus
@@ -22,9 +22,16 @@ async def login(login_input: LoginInput):
     except Exception as exception:
         return Response.error_response(SERVER_ERROR, HTTPStatus.INTERNAL_SERVER_ERROR)
     
-    return Response.success_response(response, "Login Successful", HTTPStatus.OK)
+    return Response.success_response(response, "Login Successful", HTTPStatus.CREATED)
 
 
-@auth_router.post("/signup", status_code=status.HTTP_201_CREATED)
-def signup(signup_input: SignUpInput):
-    pass
+@auth_router.post("/signin", status_code=status.HTTP_201_CREATED)
+async def signup(sign_in_input: SignInInput):
+    try:
+        await user_service_instance.add_user(sign_in_input)
+    except HTTPException as exception:
+        return Response.error_response(exception.detail, exception.status_code)
+    except Exception as exception:
+        return Response.error_response(SERVER_ERROR, HTTPStatus.INTERNAL_SERVER_ERROR)
+    
+    return Response.success_response(None, "Sign in Successful", HTTPStatus.CREATED)

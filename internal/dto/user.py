@@ -3,7 +3,7 @@ import re
 
 PASSWORD_REGEX = re.compile(r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{12,}$")
 
-class SignUpInput(BaseModel):
+class SignInInput(BaseModel):
 
     model_config = {
         "populate_by_name": True,

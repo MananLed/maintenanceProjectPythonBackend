@@ -110,7 +110,7 @@ class UserRepository:
                 Parameters=[{"S": "USERS"}, {"S": email}]
             )
         except Exception:
-            raise HTTPException(status_code = status.HTTP_500_INTERNAL_SERVER_ERROR, detail = "Server Error")
+            raise HTTPException(status_code = status.HTTP_500_INTERNAL_SERVER_ERROR, detail = "Internal Server Error")
 
         items = response["Items"]
 
@@ -126,6 +126,51 @@ class UserRepository:
                           user_details.get("flat"), user_details.get("password"), user_details.get("role"), user_details.get("id"))
 
         return user
+    
+
+    async def add_user(self, new_user: User):
+        statement = f"INSERT INTO {self.table_name} VALUE {{'PK': ?, 'SK': ?, 'email': ?, 'first_name': ?, 'flat': ?, 'id': ?, 'middle_name': ?, 'last_name': ?, 'mobile_number': ?, 'password': ?, 'role': ?}}"
+
+        try:
+            await asyncio.to_thread(
+                self.dynamodb.execute_transaction,
+                TransactStatements=[
+                    {
+                        "Statement": statement,
+                        "Parameters": [
+                            {"S": "USERS"},
+                            {"S": (new_user.email + "#" + new_user.id)},
+                            {"S": new_user.email},
+                            {"S": new_user.first_name},
+                            {"S": new_user.flat},
+                            {"S": new_user.id},
+                            {"S": new_user.middle_name},
+                            {"S": new_user.last_name},
+                            {"S": new_user.mobile_number},
+                            {"S": new_user.password},
+                            {"S": new_user.role.value}
+                        ]
+                    },
+                    {
+                        "Statement": statement,
+                        "Parameters": [
+                            {"S": ("ROLE" + "#" + new_user.role.value)},
+                            {"S": new_user.id},
+                            {"S": new_user.email},
+                            {"S": new_user.first_name},
+                            {"S": new_user.flat},
+                            {"S": new_user.id},
+                            {"S": new_user.middle_name},
+                            {"S": new_user.last_name},
+                            {"S": new_user.mobile_number},
+                            {"S": new_user.password},
+                            {"S": new_user.role.value}
+                        ]
+                    }
+                ]
+            )
+        except Exception:
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal Server Error")
     
     
 

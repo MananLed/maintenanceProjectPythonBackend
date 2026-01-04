@@ -12,6 +12,31 @@ class NoticeRepository:
         self.dynamodb = ddb_connection
         self.table_name = table_name
 
+    async def issue_notice(self, notice: Notice):
+
+        notice_id = str(notice.id)
+        formatted_date = notice.date_issued.strftime("%Y-%m-%d %H:%M:%S.%f")
+
+        statement = f"INSERT INTO {self.table_name} VALUE {{'PK': ?, 'SK': ?, 'date_issued': ?, 'id': ?, 'content': ?, 'month': ?, 'year': ?}}"
+
+        parameters = [
+            {"S": "NOTICES"},
+            {"S": f"{notice.year}#{notice.month}#{notice_id}"},
+            {"S": formatted_date},
+            {"S": notice_id},
+            {"S": notice.content},
+            {"S": str(notice.month)},
+            {"N": str(notice.year)} 
+        ]
+
+        try:
+            await asyncio.to_thread(
+                self.dynamodb.execute_statement,
+                Statement=statement,
+                Parameters=parameters
+            )
+        except:
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal Server Error")
     
     async def get_all_notices(self):
         try:

@@ -3,6 +3,7 @@ from typing import Annotated
 from http import HTTPStatus
 from internal.dto.notice import NoticeInput
 from internal.response.response import Response
+from internal.models.user import UserRole
 from internal.utils.jwt import verify_jwt
 from internal.constants.constants import SERVER_ERROR
 from internal.service import notice_service_instance
@@ -11,8 +12,21 @@ notice_router = APIRouter(dependencies=[Depends(verify_jwt)])
 
 
 @notice_router.post("/notices/issue")
-def issue_notice(notice_input: NoticeInput):
-    pass
+async def issue_notice(notice_input: NoticeInput, request: Request):
+    claims = request.state.user
+
+    if claims.get("role") != UserRole.ROLEADMIN and claims.get("role") != UserRole.ROLEOFFICER:
+        return Response.error_response("Unauthorized access", HTTPStatus.UNAUTHORIZED)
+    
+    try:
+        await notice_service_instance.issue_notice(notice_input)
+    except HTTPException as exception:
+        return Response.error_response(exception.detail, exception.status_code)
+    except Exception as exception:
+        return Response.error_response(SERVER_ERROR, HTTPStatus.INTERNAL_SERVER_ERROR)
+    
+    return Response.success_response(None, "Notice issued successfully", HTTPStatus.CREATED)
+    
 
 
 @notice_router.get("/notices")

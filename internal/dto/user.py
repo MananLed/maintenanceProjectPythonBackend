@@ -1,16 +1,11 @@
-from pydantic import BaseModel, Field, field_validator, EmailStr
+from pydantic import BaseModel, Field, field_validator, EmailStr, ConfigDict
 import re
 
 PASSWORD_REGEX = re.compile(r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{12,}$")
 
 class SignInInput(BaseModel):
 
-    model_config = {
-        "populate_by_name": True,
-        "extra": "forbid",
-        "str_strip_whitespace": True,
-        "validate_assignment": True,
-    }
+    model_config = ConfigDict(populate_by_name=True, extra="forbid", str_strip_whitespace=True, validate_assignment=True)
 
     first_name: str = Field(min_length=1, max_length=26, alias="firstname")
     middle_name: str = Field(max_length=26, default="", alias="middlename")
@@ -34,12 +29,7 @@ class SignInInput(BaseModel):
 
 class LoginInput(BaseModel):
 
-    model_config = {
-        "populate_by_name": True,
-        "extra": "forbid",
-        "str_strip_whitespace": True,
-        "validate_assignment": True,
-    }
+    model_config = ConfigDict(populate_by_name=True, extra="forbid", str_strip_whitespace=True, validate_assignment=True)
 
     email: EmailStr = Field(alias="email")
     password: str = Field(alias="password")
@@ -47,12 +37,7 @@ class LoginInput(BaseModel):
 
 class OfficerDetails(LoginInput):
 
-    model_config = {
-        "populate_by_name": True,
-        "extra": "forbid",
-        "str_strip_whitespace": True,
-        "validate_assignment": True,
-    }
+    model_config = ConfigDict(populate_by_name=True, extra="forbid", str_strip_whitespace=True, validate_assignment=True)
 
     @field_validator("password")
     @classmethod
@@ -66,12 +51,7 @@ class OfficerDetails(LoginInput):
 
 class ChangePassword(BaseModel):
 
-    model_config = {
-        "populate_by_name": True,
-        "extra": "forbid",
-        "str_strip_whitespace": True,
-        "validate_assignment": True,
-    }
+    model_config = ConfigDict(populate_by_name=True, extra="forbid", str_strip_whitespace=True, validate_assignment=True)
 
     old_password: str = Field(alias="oldPassword")
     new_password: str = Field(alias="newPassword")
@@ -88,12 +68,7 @@ class ChangePassword(BaseModel):
 
 class UpdateProfile(BaseModel):
 
-    model_config = {
-        "populate_by_name": True,
-        "extra": "forbid",
-        "str_strip_whitespace": True,
-        "validate_assignment": True,
-    }
+    model_config = ConfigDict(populate_by_name=True, extra="forbid", str_strip_whitespace=True, validate_assignment=True)
 
     first_name: str = Field(min_length=1, max_length=26, default="", alias="firstname")
     middle_name: str = Field(max_length=26, default="", alias="middlename")

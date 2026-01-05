@@ -2,3 +2,7 @@ TABLENAME: str = "UpKeepzTable"
 SECRETKEY: str = "ManLed123"
 ALGORITHM: str = "HS256"
 SERVER_ERROR: str = "Internal Server Error"
+START_TIME_OF_SERVICE = 9
+END_TIME_OF_SERVICE = 17
+TIME_LIMIT_OF_SLOT = 45
+TIME_LAYOUT = "%I:%M %p" 

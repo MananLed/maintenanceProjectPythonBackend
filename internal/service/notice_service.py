@@ -12,8 +12,7 @@ class NoticeService:
 
         now = datetime.utcnow()
 
-        notice: Notice = Notice(**notice_input.model_dump(), date_issued=now, month=now.month, year=now.year)
-
+        notice: Notice = Notice.model_construct(**notice_input.model_dump(), date_issued=now, month=now.month, year=now.year) 
         try:
             await self.notice_repository.issue_notice(notice)
         except HTTPException as exception:

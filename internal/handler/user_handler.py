@@ -6,8 +6,10 @@ from internal.dto.user import (
 )
 from internal.models.user import User
 from internal.response.response import Response
+from internal.models.user import UserRole
+import uuid
 from internal.utils.jwt import verify_jwt
-from internal.service import user_service_instance
+from internal.service import user_service_instance, society_service_instance
 from internal.constants.constants import SERVER_ERROR
 
 
@@ -30,20 +32,32 @@ async def get_profile(request: Request):
 
 
 @user_router.patch("/profile/password")
-def change_password(change_password_input: ChangePassword):
-    pass
+async def change_password(change_password_input: ChangePassword, request: Request):
+    try:
+        claims = request.state.user
+        user: User = await user_service_instance.get_user_by_email(claims.get("email"))
+        await user_service_instance.change_password(change_password_input, user.password, user.role, user.email, user.id)
+    except HTTPException as exception:
+        return Response.error_response(exception.detail, exception.status_code)
+    except Exception as exception:
+        return Response.error_response(SERVER_ERROR, HTTPStatus.INTERNAL_SERVER_ERROR)
+    
+    return Response.success_response(None, "Password changed successfully", HTTPStatus.OK)
 
 
 @user_router.delete("/profile")
-def delete_profile():
-    pass
+async def delete_profile(request: Request):
+    claims = request.state.user 
 
+    try:
+        await society_service_instance.delete_user(uuid.UUID(claims.get("user_id")), UserRole(claims.get("role")))
+    except HTTPException as exception:
+        return Response.error_response(exception.detail, exception.status_code)
+    except Exception as exception:
+        return Response.error_response(SERVER_ERROR, HTTPStatus.INTERNAL_SERVER_ERROR)
+    
+    return Response.success_response(None, "Profile deleted successfully", HTTPStatus.OK)
 
 @user_router.patch("/profile/update")
 def update_profile(update_profile_input: UpdateProfile):
     pass
-
-
-@user_router.get("/users")
-def get_all_users():
-    user_service_instance.get_all_users()

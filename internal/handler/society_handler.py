@@ -1,5 +1,7 @@
-from fastapi import APIRouter, Request, HTTPException, Depends
+from fastapi import APIRouter, Request, HTTPException, Depends, Query
+from typing import Annotated
 from http import HTTPStatus
+from uuid import UUID
 from internal.models.user import UserRole
 from internal.dto.user import OfficerDetails, SignInInput
 from internal.response.response import Response
@@ -54,13 +56,37 @@ async def get_officers(request: Request):
 
 
 @society_router.delete("/credentials/officer")
-def delete_officer():
-    pass
+async def delete_officer(id: Annotated[UUID, Query()], request: Request):
+    claims = request.state.user
+
+    if claims.get("role") != UserRole.ROLEADMIN:
+        return Response.error_response("Unauthorized access", HTTPStatus.UNAUTHORIZED)
+    
+    try:
+        await society_service_instance.delete_user(id, UserRole.ROLEOFFICER)
+    except HTTPException as exception:
+        return Response.error_response(exception.detail, exception.status_code)
+    except Exception as exception:
+        return Response.error_response(SERVER_ERROR, HTTPStatus.INTERNAL_SERVER_ERROR)
+    
+    return Response.success_response(None, "Officer deleted successfully", HTTPStatus.OK)
 
 
 @society_router.delete("/credentials/resident")
-def delete_resident():
-    pass
+async def delete_resident(id: Annotated[UUID, Query()], request: Request):
+    claims = request.state.user
+
+    if claims.get("role") != UserRole.ROLEADMIN:
+        return Response.error_response("Unauthorized access", HTTPStatus.UNAUTHORIZED)
+    
+    try:
+        await society_service_instance.delete_user(id, UserRole.ROLERESIDENT)
+    except HTTPException as exception:
+        return Response.error_response(exception.detail, exception.status_code)
+    except Exception as exception:
+        return Response.error_response(SERVER_ERROR, HTTPStatus.INTERNAL_SERVER_ERROR)
+    
+    return Response.success_response(None, "Resident deleted successfully", HTTPStatus.OK)
 
 
 @society_router.post("/officers")
@@ -80,10 +106,10 @@ async def add_officer(officer_details_input: OfficerDetails, request: Request):
         password=officer_details_input.password,
     )
 
-    await user_service_instance.add_user(new_officer, True)
+    user = await user_service_instance.add_user(new_officer, True)
 
     return Response.success_response(
-        None, "Officer created successfully", HTTPStatus.CREATED
+        user, "Officer created successfully", HTTPStatus.CREATED
     )
 
 

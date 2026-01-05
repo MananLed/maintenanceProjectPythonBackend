@@ -1,5 +1,5 @@
 from internal.repository import user_repository_instance
-from internal.dto.user import LoginInput, SignInInput
+from internal.dto.user import LoginInput, SignInInput, ChangePassword
 from internal.models.user import User, UserRole
 from internal.utils.hash_and_check_password import compare_hash_and_password
 from fastapi import HTTPException, status
@@ -11,8 +11,20 @@ class UserService:
     def __init__(self):
         self.user_repository = user_repository_instance
 
-    def get_all_users(self):
-        self.user_repository.get_all_user_details()
+    async def change_password(self, change_password_input: ChangePassword, current_password: str, role: str, email: str, user_id: str):
+        if not compare_hash_and_password(change_password_input.old_password, current_password):
+            raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Old password does'nt match")
+        
+        if compare_hash_and_password(change_password_input.new_password, current_password):
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "No change in the password")
+        
+        try:
+            new_hashed_password = generate_hash_from_password(change_password_input.new_password)
+            await self.user_repository.change_password(new_hashed_password, role, email, user_id)
+        except HTTPException as exception:
+            raise exception
+        except Exception as exception:
+            raise exception  
 
     async def get_user_by_email_and_password(self, login_request: LoginInput):
 
@@ -58,8 +70,9 @@ class UserService:
             raise HTTPException(status.HTTP_400_BAD_REQUEST, "User with given email already exists")
 
 
-        user: User = User(**sign_in_input.model_dump())
+        user: User = User.model_construct(**sign_in_input.model_dump())
         user.id = str(user.id)
+
 
         if is_officer == True:
             user.flat = "xxx"

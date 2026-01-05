@@ -11,7 +11,7 @@ class Response:
 
         return JSONResponse(
             status_code=status_code,
-            content={"status": "Success", "message": message, "data": jsonable_encoder(data)},
+            content={"status": "Success", "message": message, "data": jsonable_encoder(data, by_alias=True)},
         )
 
     @classmethod

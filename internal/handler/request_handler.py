@@ -1,5 +1,6 @@
-from fastapi import APIRouter, Depends, Request, HTTPException, Query
+from fastapi import APIRouter, Depends, Request, HTTPException, Query, Path
 from http import HTTPStatus
+from uuid import UUID
 from typing import List, Annotated
 from internal.dto.service_request import (
     ServiceRequestInput,
@@ -18,8 +19,20 @@ request_router = APIRouter(dependencies=[Depends(verify_jwt)])
 
 
 @request_router.post("/service")
-def book_request(service_request_input: ServiceRequestInput):
-    pass
+async def book_request(service_request_input: ServiceRequestInput, request: Request):
+    claims = request.state.user
+
+    if claims.get("role") != UserRole.ROLERESIDENT:
+        return Response.error_response("Unauthorized access", HTTPStatus.UNAUTHORIZED)
+    
+    try:
+        await request_service_instance.book_service(service_request_input, claims)
+    except HTTPException as exception:
+        return Response.error_response(exception.detail, exception.status_code)
+    except Exception:
+        return Response.error_response(SERVER_ERROR, HTTPStatus.INTERNAL_SERVER_ERROR)
+    
+    return Response.success_response(None, "Service request booked successfully", HTTPStatus.CREATED)
 
 
 @request_router.delete("/service/cancel/{id}")
@@ -33,13 +46,27 @@ def reschedule_request(id, reschedule_request_input: RescheduleRequestInput):
 
 
 @request_router.patch("/service/approve/{id}")
-def approve_request(id, assigned_to_input: RequestProviderInput):
-    pass
+async def approve_request(id: Annotated[UUID, Path()], assigned_to_input: RequestProviderInput, request: Request):
+    claims = request.state.user
+
+    if claims.get("role") != UserRole.ROLEADMIN and claims.get("role") != UserRole.ROLEOFFICER:
+        return Response.error_response("Unauthorized access", HTTPStatus.UNAUTHORIZED)
+    
+    await request_service_instance.update_request_status(Status.STATUSAPPROVED, id, assigned_to_input)
+
+    return Response.success_response(None, "Request approved successfully", HTTPStatus.OK)
 
 
 @request_router.patch("/service/complete/{id}")
-def complete_request(id):
-    pass
+async def complete_request(id: Annotated[UUID, Path()], request: Request):
+    claims = request.state.user
+
+    if claims.get("role") != UserRole.ROLEADMIN and claims.get("role") != UserRole.ROLEOFFICER:
+        return Response.error_response("Unauthorized access", HTTPStatus.UNAUTHORIZED)
+    
+    await request_service_instance.update_request_status(Status.STATUSCOMPLETED, id)
+
+    return Response.success_response(None, "Request marked completed successfully", HTTPStatus.OK)
 
 
 @request_router.get("/service/all")
@@ -122,8 +149,16 @@ async def get_requests_by_type_status(status: Annotated[Status, Query()], servic
 
 
 @request_router.get("/service/time-slots")
-def get_available_time_slots():
-    pass
+async def get_available_time_slots(serviceType: Annotated[ServiceType, Query()]): 
+    try:
+        available_slots = await request_service_instance.get_available_time_slots(serviceType)
+    except HTTPException as exception:
+        return Response.error_response(exception.detail, exception.status_code)
+    except Exception as exception:
+        return Response.error_response(SERVER_ERROR, HTTPStatus.INTERNAL_SERVER_ERROR)
+
+    return Response.success_response(available_slots, "Available time slots fetched successfully", HTTPStatus.OK)
+    
 
 
 def delete_requests_of_resident(user_id_input: DeleteUserRequestInput):

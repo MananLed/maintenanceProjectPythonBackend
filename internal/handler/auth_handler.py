@@ -8,7 +8,6 @@ from http import HTTPStatus
 from fastapi import HTTPException
 from internal.constants.constants import SERVER_ERROR
 from internal.service import user_service_instance
-import time
 
 auth_router = APIRouter()
 

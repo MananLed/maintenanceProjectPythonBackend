@@ -69,8 +69,8 @@ class InvoiceRepository:
         for item in items:
             invoice_details = {k: self.deserializer.deserialize(v) for k, v in item.items()}
 
-            invoice: Invoice = Invoice(invoice_details.get("amount"), int(invoice_details.get("month")), 
-                                    invoice_details.get("year"), uuid.UUID(invoice_details.get("id")))
+            invoice: Invoice = Invoice.model_construct(amount = float(invoice_details.get("amount")), month = int(invoice_details.get("month")), 
+                                    year = int(invoice_details.get("year")), id = uuid.UUID(invoice_details.get("id")))
             
             invoices.append(invoice)
 

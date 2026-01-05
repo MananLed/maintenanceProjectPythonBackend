@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+from pydantic import Field, BaseModel
 from enum import Enum
 from uuid import uuid4
 
@@ -8,18 +9,16 @@ class UserRole(str, Enum):
     ROLEOFFICER = "officer"
     ROLERESIDENT = "resident"
 
-
-@dataclass
-class User:
-    first_name: str = field(metadata={"json": "first_name"})
-    middle_name: str = field(metadata={"json": "middle_name"})
-    last_name: str = field(metadata={"json": "last_name"})
-    mobile_number: str = field(metadata={"json": "mobile_number"})
-    email: str = field(metadata={"json": "email"})
-    flat: str = field(metadata={"json": "flat"})
-    password: str = field(metadata={"json": "password"})
-    role: UserRole = field(metadata={"json": "role"}, default=UserRole.ROLERESIDENT)
-    id: str = field(metadata={"json": "id"}, default_factory=uuid4)
+class User(BaseModel):
+    first_name: str = Field(alias="first_name")
+    middle_name: str = Field(alias="middle_name")
+    last_name: str = Field(alias="last_name")
+    mobile_number: str = Field(alias="mobile_number")
+    email: str = Field(alias="email")
+    flat: str = Field(alias="flat")
+    password: str = Field(alias="password")
+    role: UserRole = Field(alias="role", default=UserRole.ROLERESIDENT)
+    id: str = Field(alias="id", default_factory = lambda: str(uuid4()))
 
 
 

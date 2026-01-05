@@ -1,13 +1,8 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 
 class FeedbackInput(BaseModel):
 
-    model_config = {
-        "populate_by_name": True,
-        "extra": "forbid",
-        "str_strip_whitespace": True,
-        "validate_assignment": True,
-    }
+    model_config = ConfigDict(populate_by_name=True, extra="forbid", str_strip_whitespace=True, validate_assignment=True)
 
     rating: int = Field(ge=1, le=5, alias="rating")
     content: str = Field(default="", max_length=500, alias="content")

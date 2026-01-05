@@ -59,8 +59,8 @@ class NoticeRepository:
 
             notice_date_issued = datetime.strptime(notice_details.get("date_issued"), date_format)
 
-            notice: Notice = Notice(notice_date_issued, notice_details.get("content"), int(notice_details.get("month")), 
-                                    notice_details.get("year"), uuid.UUID(notice_details.get("id")))
+            notice: Notice = Notice.model_construct(date_issued = notice_date_issued, content =  notice_details.get("content"), month = int(notice_details.get("month")), 
+                                    year = int(notice_details.get("year")), id = uuid.UUID(notice_details.get("id")))
             
             notices.append(notice)
 
@@ -97,8 +97,8 @@ class NoticeRepository:
 
             notice_date_issued = datetime.strptime(notice_details.get("date_issued"), date_format)
 
-            notice: Notice = Notice(notice_date_issued, notice_details.get("content"), int(notice_details.get("month")), 
-                                    notice_details.get("year"), uuid.UUID(notice_details.get("id")))
+            notice: Notice = Notice.model_construct(date_issued = notice_date_issued, content =  notice_details.get("content"), month = int(notice_details.get("month")), 
+                                    year = int(notice_details.get("year")), id = uuid.UUID(notice_details.get("id")))
             
             notices.append(notice)
 

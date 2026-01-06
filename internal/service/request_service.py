@@ -68,6 +68,16 @@ class RequestService:
         except Exception as exception:
             raise exception
         
+    async def get_request_by_id(self, request_id: UUID):
+        try:
+            request: ServiceRequest = await self.request_repository.get_request_by_id(request_id)
+        except HTTPException as exception:
+            raise exception 
+        except Exception as exception:
+            raise exception 
+        
+        return request
+        
 
     async def update_request_status(self, status_: Status, request_id: UUID, assigned_to: RequestProviderInput | None = None):
         try:
@@ -124,3 +134,11 @@ class RequestService:
             available_slots.append(slot)
 
         return available_slots
+    
+    async def delete_request(self, service_request: ServiceRequest):
+        try:
+            await self.request_repository.delete_request(service_request)
+        except HTTPException as exception:
+            raise exception 
+        except Exception as exception:
+            raise exception

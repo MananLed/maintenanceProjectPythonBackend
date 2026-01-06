@@ -59,5 +59,31 @@ async def delete_profile(request: Request):
     return Response.success_response(None, "Profile deleted successfully", HTTPStatus.OK)
 
 @user_router.patch("/profile/update")
-def update_profile(update_profile_input: UpdateProfile):
-    pass
+async def update_profile(update_profile_input: UpdateProfile, request: Request):
+    claims = request.state.user 
+
+    try:
+        user: User = await user_service_instance.get_user_by_id_and_role(UserRole(claims.get("role")), uuid.UUID(claims.get("user_id")))
+
+        old_email: str = ""
+
+        if update_profile_input.first_name != "":
+            user.first_name = update_profile_input.first_name 
+        if update_profile_input.middle_name != "":
+            user.middle_name = update_profile_input.middle_name 
+        if update_profile_input.last_name != "":
+            user.last_name = update_profile_input.last_name
+        if update_profile_input.mobile_number != "":
+            user.mobile_number = update_profile_input.mobile_number 
+        if update_profile_input.email != "":
+            old_email = user.email 
+            user.email = update_profile_input.email 
+
+        await user_service_instance.update_profile(user, old_email)
+    except HTTPException as exception:
+        return Response.error_response(exception.detail, exception.status_code)
+    except Exception as exception:
+        return Response.error_response(SERVER_ERROR, HTTPStatus.INTERNAL_SERVER_ERROR)
+    
+    return Response.success_response(None, "Profile updated successfully", HTTPStatus.OK)
+        

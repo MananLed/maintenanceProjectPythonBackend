@@ -216,3 +216,33 @@ class RequestRepository:
             )
         except Exception:
             raise HTTPException(status_code = status.HTTP_500_INTERNAL_SERVER_ERROR, detail = "Internal Server Error")
+        
+    async def delete_request(self, service_request: ServiceRequest):
+        delete_statement = f'DELETE FROM "{self.table_name}" WHERE PK = ? AND SK = ?'
+
+        sk_requests = (
+            f"{service_request.status.value}#{service_request.service_type.value}#{service_request.resident_id}#{service_request.date}#{service_request.request_id}"
+        )
+        
+        try:
+            await asyncio.to_thread(
+                self.dynamodb.execute_transaction,
+                TransactStatements=[
+                    {
+                        "Statement": delete_statement,
+                        "Parameters": [
+                            {"S": str(service_request.request_id)},
+                            {"S": str(service_request.request_id)}
+                        ]
+                    },
+                    {
+                        "Statement": delete_statement,
+                        "Parameters": [
+                            {"S": "REQUESTS"}, 
+                            {"S": sk_requests} 
+                        ]
+                    }
+                ]
+            )
+        except Exception:
+            raise HTTPException(status_code = status.HTTP_500_INTERNAL_SERVER_ERROR, detail = "Internal Server Error")

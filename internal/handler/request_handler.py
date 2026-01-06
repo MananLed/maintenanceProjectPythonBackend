@@ -37,8 +37,25 @@ async def book_request(service_request_input: ServiceRequestInput, request: Requ
 
 
 @request_router.delete("/service/cancel/{id}")
-def delete_request(id):
-    pass
+async def delete_request(id: Annotated[UUID, Path()], request: Request):
+    claims = request.state.user 
+
+    try:
+        service_request: ServiceRequest = await request_service_instance.get_request_by_id(id)
+
+        if service_request.resident_id != claims.get("user_id"):
+            return Response.error_response("Unauthorized Access", HTTPStatus.UNAUTHORIZED)
+        
+        if service_request.status != Status.STATUSPENDING:
+            return Response.error_response("Only pending requests can be cancelled", HTTPStatus.BAD_REQUEST)
+        
+        await request_service_instance.delete_request(service_request)
+    except HTTPException as exception:
+        raise exception
+    except Exception as exception:
+        raise exception
+    
+    return Response.success_response(None, "Request cancelled successfully", HTTPStatus.OK)
 
 
 @request_router.patch("/service/reschedule/{id}")

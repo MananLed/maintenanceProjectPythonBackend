@@ -11,7 +11,7 @@ class InvoiceService:
     async def issue_invoice(self, invoice_input: InvoiceInput):
         now = datetime.utcnow()
 
-        invoice = Invoice(
+        invoice = Invoice.model_construct(
             **invoice_input.model_dump(),
             month = now.month, 
             year = now.year,

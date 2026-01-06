@@ -5,6 +5,7 @@ from internal.utils.hash_and_check_password import compare_hash_and_password
 from fastapi import HTTPException, status
 from internal.utils.jwt import create_jwt_token
 from internal.utils.hash_and_check_password import generate_hash_from_password
+from uuid import UUID
 
 
 class UserService:
@@ -56,6 +57,16 @@ class UserService:
 
         return user
     
+    async def get_user_by_id_and_role(self, role: UserRole, id: UUID):
+        try:
+            user: User = await self.user_repository.get_user_by_id_and_role(role, id)
+        except HTTPException as exception:
+            raise exception
+        except Exception as exception:
+            raise exception
+
+        return user
+    
     async def add_user(self, sign_in_input: SignInInput, is_officer: bool | None = None):
         
         try:
@@ -90,3 +101,11 @@ class UserService:
             raise exception
         except Exception as exception:
             raise exception
+        
+    async def update_profile(self, user: User, old_email: str | None = None):
+        try:
+            await self.user_repository.update_profile(user, old_email)
+        except HTTPException as exception:
+            raise exception
+        except Exception as exception:
+            raise exception    

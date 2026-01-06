@@ -4,7 +4,7 @@ from typing import List
 from uuid import UUID
 from internal.repository import request_repository_instance
 from internal.models.service_request import ServiceType, Status, ServiceRequest
-from internal.dto.service_request import RequestProviderInput, ServiceRequestInput
+from internal.dto.service_request import RequestProviderInput, ServiceRequestInput, RescheduleRequestInput
 from internal.utils.generate_time_slots import generate_time_slots, is_slot_in_past
 
 class RequestService:
@@ -26,15 +26,14 @@ class RequestService:
             user = claims
 
             now = datetime.now()
+            
 
-            new_request = ServiceRequest(
-                resident_id=user.get("user_id"), 
-                flat=user.get("flat"),
-                time_slot=f"{chosen_slot.Label}",
-                service_type=service_request_input.service_type,
-                date=now.strftime("%d-%m-%Y"), 
-                assigned_to="",
-                feedback_given=False
+            new_request: ServiceRequest = ServiceRequest.model_construct(
+                resident_id = user.get("user_id"), 
+                flat = user.get("flat"),
+                time_slot = f"{chosen_slot.Label}",
+                service_type = service_request_input.service_type,
+                date = now.strftime("%d-%m-%Y")
             )
 
             await self.request_repository.book_request(new_request)
@@ -42,10 +41,46 @@ class RequestService:
             raise exception
         except Exception as exception:
             raise exception
-
-    async def update_request_status(self, status: Status, request_id: UUID, assigned_to: RequestProviderInput | None = None):
+        
+    async def reschedule_request(self, id: UUID, reschedule_request_input: RescheduleRequestInput, claims):
         try:
-            await self.request_repository.update_request_status(status, request_id, assigned_to)
+            request: ServiceRequest = await self.request_repository.get_request_by_id(id)
+
+            if claims.get("user_id") != str(request.resident_id):
+                raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Not authorized")
+
+            if request.status == Status.STATUSAPPROVED or request.status == Status.STATUSCOMPLETED:
+                raise HTTPException(status.HTTP_400_BAD_REQUEST, "Request is either approved or completed already")
+            
+            available_slots = await self.get_available_time_slots(request.service_type)
+
+            if reschedule_request_input.slot_id < 1 or reschedule_request_input.slot_id > len(available_slots):
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Invalid request: Slot ID out of range"
+                )
+            
+            chosen_slot = available_slots[reschedule_request_input.slot_id - 1]
+
+            await self.request_repository.reschedule_request(str(chosen_slot.Label), request)
+        except HTTPException as exception:
+            raise exception 
+        except Exception as exception:
+            raise exception
+        
+
+    async def update_request_status(self, status_: Status, request_id: UUID, assigned_to: RequestProviderInput | None = None):
+        try:
+            request: ServiceRequest = await self.request_repository.get_request_by_id(request_id)
+
+            if status_ == Status.STATUSAPPROVED:
+                if request.status != Status.STATUSPENDING:
+                    raise HTTPException(status.HTTP_400_BAD_REQUEST, "Only pending request can be approved")
+            elif status_ == Status.STATUSCOMPLETED:
+                if request.status != Status.STATUSAPPROVED:
+                    raise HTTPException(status.HTTP_400_BAD_REQUEST, "Only approved request can be marked completed") 
+            
+            await self.request_repository.update_request_status(status_, request, assigned_to)
         except HTTPException as exception:
             raise exception 
         except Exception as exception:

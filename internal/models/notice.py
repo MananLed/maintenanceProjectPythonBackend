@@ -1,6 +1,4 @@
-from dataclasses import dataclass, field
 from pydantic import BaseModel, Field
-from datetime import datetime
 from uuid import UUID, uuid4
 
 class Notice(BaseModel):

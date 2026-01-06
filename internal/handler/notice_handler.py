@@ -19,7 +19,7 @@ async def issue_notice(notice_input: NoticeInput, request: Request):
         return Response.error_response("Unauthorized access", HTTPStatus.UNAUTHORIZED)
     
     try:
-        notice_service_instance.issue_notice(notice_input)
+        await notice_service_instance.issue_notice(notice_input)
     except HTTPException as exception:
         return Response.error_response(exception.detail, exception.status_code)
     except Exception as exception:

@@ -114,7 +114,7 @@ class UserRepository:
                     }
                 ]
             )
-        except Exception as exception:
+        except Exception:
             raise HTTPException(status_code = status.HTTP_500_INTERNAL_SERVER_ERROR, detail = "Internal Server Error")
 
     async def get_user_by_email(self, email: str):

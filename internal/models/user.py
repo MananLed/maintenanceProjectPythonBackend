@@ -1,4 +1,3 @@
-from dataclasses import dataclass, field
 from pydantic import Field, BaseModel
 from enum import Enum
 from uuid import uuid4

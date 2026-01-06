@@ -29,7 +29,8 @@ async def book_request(service_request_input: ServiceRequestInput, request: Requ
         await request_service_instance.book_service(service_request_input, claims)
     except HTTPException as exception:
         return Response.error_response(exception.detail, exception.status_code)
-    except Exception:
+    except Exception as exception:
+        print(exception)
         return Response.error_response(SERVER_ERROR, HTTPStatus.INTERNAL_SERVER_ERROR)
     
     return Response.success_response(None, "Service request booked successfully", HTTPStatus.CREATED)
@@ -41,8 +42,20 @@ def delete_request(id):
 
 
 @request_router.patch("/service/reschedule/{id}")
-def reschedule_request(id, reschedule_request_input: RescheduleRequestInput):
-    pass
+async def reschedule_request(id: Annotated[UUID, Path()], reschedule_request_input: RescheduleRequestInput, request: Request):
+    claims = request.state.user
+
+    if claims.get("role") != UserRole.ROLERESIDENT:
+        return Response.error_response("Unauthorized access", HTTPStatus.UNAUTHORIZED)
+    
+    try:
+        await request_service_instance.reschedule_request(id, reschedule_request_input, claims)
+    except HTTPException as exception:
+        return Response.error_response(exception.detail, exception.status_code)
+    except Exception as exception:
+        return Response.error_response(SERVER_ERROR, HTTPStatus.INTERNAL_SERVER_ERROR)
+    
+    return Response.success_response(None, "Service request rescheduled successfully", HTTPStatus.OK)
 
 
 @request_router.patch("/service/approve/{id}")
@@ -52,7 +65,12 @@ async def approve_request(id: Annotated[UUID, Path()], assigned_to_input: Reques
     if claims.get("role") != UserRole.ROLEADMIN and claims.get("role") != UserRole.ROLEOFFICER:
         return Response.error_response("Unauthorized access", HTTPStatus.UNAUTHORIZED)
     
-    await request_service_instance.update_request_status(Status.STATUSAPPROVED, id, assigned_to_input)
+    try:
+        await request_service_instance.update_request_status(Status.STATUSAPPROVED, id, assigned_to_input)
+    except HTTPException as exception:
+        return Response.error_response(exception.detail, exception.status_code)
+    except Exception as exception:
+        return Response.error_response(SERVER_ERROR, HTTPStatus.INTERNAL_SERVER_ERROR)
 
     return Response.success_response(None, "Request approved successfully", HTTPStatus.OK)
 
@@ -64,7 +82,12 @@ async def complete_request(id: Annotated[UUID, Path()], request: Request):
     if claims.get("role") != UserRole.ROLEADMIN and claims.get("role") != UserRole.ROLEOFFICER:
         return Response.error_response("Unauthorized access", HTTPStatus.UNAUTHORIZED)
     
-    await request_service_instance.update_request_status(Status.STATUSCOMPLETED, id)
+    try:
+        await request_service_instance.update_request_status(Status.STATUSCOMPLETED, id)
+    except HTTPException as exception:
+        return Response.error_response(exception.detail, exception.status_code)
+    except Exception as exception:
+        return Response.error_response(SERVER_ERROR, HTTPStatus.INTERNAL_SERVER_ERROR)
 
     return Response.success_response(None, "Request marked completed successfully", HTTPStatus.OK)
 

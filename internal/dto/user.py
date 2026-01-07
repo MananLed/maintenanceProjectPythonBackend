@@ -7,9 +7,9 @@ class SignInInput(BaseModel):
 
     model_config = ConfigDict(populate_by_name=True, extra="forbid", str_strip_whitespace=True, validate_assignment=True)
 
-    first_name: str = Field(min_length=1, max_length=26, alias="firstname")
-    middle_name: str = Field(max_length=26, default="", alias="middlename")
-    last_name: str = Field(min_length=1, max_length=26, alias="lastname")
+    first_name: str = Field(min_length=1, max_length=26, alias="firstName")
+    middle_name: str = Field(max_length=26, default="", alias="middleName")
+    last_name: str = Field(min_length=1, max_length=26, alias="lastName")
     mobile_number: str = Field(
         min_length=10, max_length=10, pattern=r"^[6-9][0-9]{9}$", alias="mobile"
     )

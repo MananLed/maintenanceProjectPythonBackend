@@ -24,7 +24,7 @@ async def login(login_input: LoginInput):
     return Response.success_response(response, "Login Successful", HTTPStatus.CREATED)
 
 
-@auth_router.post("/signin", status_code=status.HTTP_201_CREATED)
+@auth_router.post("/signup", status_code=status.HTTP_201_CREATED)
 async def signup(sign_in_input: SignInInput):
     try:
         await user_service_instance.add_user(sign_in_input)

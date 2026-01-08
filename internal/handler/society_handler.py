@@ -106,10 +106,15 @@ async def add_officer(officer_details_input: OfficerDetails, request: Request):
         password=officer_details_input.password,
     )
 
-    user = await user_service_instance.add_user(new_officer, True)
+    try:
+        await user_service_instance.add_user(new_officer, True)
+    except HTTPException as exception:
+        return Response.error_response(exception.detail, exception.status_code)
+    except Exception as exception:
+        return Response.error_response(SERVER_ERROR, HTTPStatus.INTERNAL_SERVER_ERROR)
 
     return Response.success_response(
-        user, "Officer created successfully", HTTPStatus.CREATED
+        None, "Officer created successfully", HTTPStatus.CREATED
     )
 
 

@@ -51,9 +51,9 @@ async def delete_request(id: Annotated[UUID, Path()], request: Request):
         
         await request_service_instance.delete_request(service_request)
     except HTTPException as exception:
-        raise exception
+        return Response.error_response(exception.detail, exception.status_code)
     except Exception as exception:
-        raise exception
+        return Response.error_response(SERVER_ERROR, HTTPStatus.INTERNAL_SERVER_ERROR)
     
     return Response.success_response(None, "Request cancelled successfully", HTTPStatus.OK)
 

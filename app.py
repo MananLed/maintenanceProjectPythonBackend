@@ -24,6 +24,17 @@ app.include_router(invoice_router)
 app.include_router(request_router)
 
 
+# from internal.dto.user import UpdateProfile 
+
+# try:
+#     user: UpdateProfile = UpdateProfile(firstname="NewFirst", middlename="NewMiddle", lastname="NewLast", mobile="9876543211", email="new@example.com")
+# except Exception as exception:
+#     print(exception)
+
+
+# print(user)
+
+
 # @app.post("/user")
 # async def create_user(user_input: SignUpInput):
 #     user = User(**user_input.model_dump())

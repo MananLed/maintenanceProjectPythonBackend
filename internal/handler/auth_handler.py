@@ -6,7 +6,8 @@ from internal.dto.user import (
 from internal.response.response import Response
 from http import HTTPStatus
 from fastapi import HTTPException
-from internal.constants.constants import SERVER_ERROR
+from internal.dependencies.dependencies import sns_client
+from internal.constants.constants import SERVER_ERROR, INVOICE_EMAIL_TOPIC_ARN
 from internal.service import user_service_instance
 
 auth_router = APIRouter()
@@ -28,6 +29,11 @@ async def login(login_input: LoginInput):
 async def signup(sign_in_input: SignInInput):
     try:
         await user_service_instance.add_user(sign_in_input)
+        sns_client.subscribe(
+            TopicArn= INVOICE_EMAIL_TOPIC_ARN,
+            Protocol="email",
+            Endpoint= str(sign_in_input.email)
+        )
     except HTTPException as exception:
         return Response.error_response(exception.detail, exception.status_code)
     except Exception as exception:

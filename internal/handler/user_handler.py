@@ -7,10 +7,11 @@ from internal.dto.user import (
 from internal.models.user import User
 from internal.response.response import Response
 from internal.models.user import UserRole
-import uuid
+import uuid, json
 from internal.utils.jwt import verify_jwt
 from internal.service import user_service_instance, society_service_instance
-from internal.constants.constants import SERVER_ERROR
+from internal.dependencies.dependencies import sqs_client
+from internal.constants.constants import SERVER_ERROR, QUEUE_URL
 
 
 user_router = APIRouter(dependencies=[Depends(verify_jwt)])
@@ -51,6 +52,13 @@ async def delete_profile(request: Request):
 
     try:
         await society_service_instance.delete_user(uuid.UUID(claims.get("user_id")), UserRole(claims.get("role")))
+        msg_body = {
+            "userId": str(claims.get("user_id"))
+        }
+        sqs_client.send_message(
+            QueueUrl=QUEUE_URL,
+            MessageBody=json.dumps(msg_body)
+        )
     except HTTPException as exception:
         return Response.error_response(exception.detail, exception.status_code)
     except Exception as exception:

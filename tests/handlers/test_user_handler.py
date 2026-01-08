@@ -85,8 +85,6 @@ def test_get_profile_invalid_token(client):
 
     assert response.status_code == 401
 
-from internal.models.user import User, UserRole
-
 
 def test_change_password_success(client, mocker, override_jwt):
     override_jwt(role="resident")

@@ -79,7 +79,7 @@ class UpdateProfile(BaseModel):
     first_name: str = Field(default="", alias="firstname")
     middle_name: str = Field(default="", alias="middlename")
     last_name: str = Field(default="", alias="lastname")
-    mobile_number: str = Field(default="", alias="mobile")
+    mobile_number: str = Field(default="", alias="mobilenumber")
     email: str = Field(default="", alias="email")
 
     @model_validator(mode="after")

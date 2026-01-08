@@ -5,9 +5,11 @@ from uuid import UUID
 from internal.models.user import UserRole
 from internal.dto.user import OfficerDetails, SignInInput
 from internal.response.response import Response
+from internal.dependencies.dependencies import sqs_client
 from internal.utils.jwt import verify_jwt
 from internal.service import society_service_instance, user_service_instance
-from internal.constants.constants import SERVER_ERROR
+from internal.constants.constants import SERVER_ERROR, QUEUE_URL
+import json
 
 
 society_router = APIRouter(dependencies=[Depends(verify_jwt)])
@@ -81,6 +83,13 @@ async def delete_resident(id: Annotated[UUID, Query()], request: Request):
     
     try:
         await society_service_instance.delete_user(id, UserRole.ROLERESIDENT)
+        msg_body = {
+            "userId": str(id)
+        }
+        sqs_client.send_message(
+            QueueUrl=QUEUE_URL,
+            MessageBody=json.dumps(msg_body)
+        )
     except HTTPException as exception:
         return Response.error_response(exception.detail, exception.status_code)
     except Exception as exception:

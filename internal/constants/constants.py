@@ -6,3 +6,6 @@ START_TIME_OF_SERVICE = 9
 END_TIME_OF_SERVICE = 17
 TIME_LIMIT_OF_SLOT = 45
 TIME_LAYOUT = "%I:%M %p" 
+
+QUEUE_URL: str = "https://sqs.ap-south-1.amazonaws.com/876588303118/delete-requests-queue"
+INVOICE_EMAIL_TOPIC_ARN: str = "arn:aws:sns:ap-south-1:876588303118:invoice-email-topic"

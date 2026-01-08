@@ -201,5 +201,4 @@ async def get_available_time_slots(serviceType: Annotated[ServiceType, Query()])
     
 
 
-def delete_requests_of_resident(user_id_input: DeleteUserRequestInput):
-    pass
+

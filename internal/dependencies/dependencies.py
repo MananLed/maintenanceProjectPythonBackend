@@ -5,3 +5,5 @@ from botocore.config import Config
 _config = Config(max_pool_connections=50)
 
 db_connection = boto3.client("dynamodb", region_name="ap-south-1", config=_config)
+sqs_client = boto3.client("sqs")
+sns_client = boto3.client("sns")

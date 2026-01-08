@@ -27,7 +27,7 @@ app.include_router(request_router)
 # from internal.dto.user import UpdateProfile 
 
 # try:
-#     user: UpdateProfile = UpdateProfile(firstname="NewFirst", middlename="NewMiddle", lastname="NewLast", mobile="9876543211", email="new@example.com")
+#     user: UpdateProfile = UpdateProfile(firstname="", middlename="", lastname="", mobilenumber="9876543211", email="nitrooblast@gmail.com")
 # except Exception as exception:
 #     print(exception)
 

@@ -6,7 +6,8 @@ from internal.models.user import UserRole
 from internal.utils.jwt import verify_jwt
 from internal.service import invoice_service_instance
 from internal.response.response import Response
-from internal.constants.constants import SERVER_ERROR
+from internal.constants.constants import SERVER_ERROR, INVOICE_EMAIL_TOPIC_ARN
+from internal.dependencies.dependencies import sns_client
 
 invoice_router = APIRouter(dependencies=[Depends(verify_jwt)])
 
@@ -20,6 +21,10 @@ async def issue_invoice(invoice_input: InvoiceInput, request: Request):
     
     try:
         await invoice_service_instance.issue_invoice(invoice_input)
+        sns_client.publish(
+            TopicArn=INVOICE_EMAIL_TOPIC_ARN,
+            Message=f"Bill of Rs. {invoice_input.amount:.2f} is issued, please check your dashboard."
+        )
     except HTTPException as exception:
         return Response.error_response(exception.detail, exception.status_code)
     except Exception as exception:

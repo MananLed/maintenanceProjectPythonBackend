@@ -275,7 +275,7 @@ def test_update_profile_success(client, mocker, override_jwt):
             "firstname": "NewFirst",
             "middlename": "NewMiddle",
             "lastname": "NewLast",
-            "mobile": "9876543211",
+            "mobilenumber": "9876543211",
             "email": "new@example.com",
         },
     )
@@ -323,7 +323,7 @@ def test_update_profile_internal_error(client, mocker, override_jwt):
             "firstname": "NewFirst",
             "middlename": "NewMiddle",
             "lastname": "NewLast",
-            "mobile": "9876543211",
+            "mobilenumber": "9876543211",
             "email": "new@example.com",
         },
     )
@@ -363,7 +363,7 @@ def test_update_profile_partial_update(client, mocker, override_jwt):
             "firstname": "NewFirst",
             "middlename": "",
             "lastname": "",
-            "mobile": "",
+            "mobilenumber": "",
             "email": "",
         },
     )
@@ -397,7 +397,7 @@ def test_update_profile_user_not_found(client, mocker, override_jwt):
             "firstname": "NewFirst",
             "middlename": "NewMiddle",
             "lastname": "NewLast",
-            "mobile": "9876543211",
+            "mobilenumber": "9876543211",
             "email": "new@example.com",
         },
     )
@@ -436,7 +436,7 @@ def test_update_profile_internal_error(client, mocker, override_jwt):
             "firstname": "NewFirst",
             "middlename": "NewMiddle",
             "lastname": "NewLast",
-            "mobile": "9876543211",
+            "mobilenumber": "9876543211",
             "email": "new@example.com",
         },
     )

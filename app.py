@@ -1,5 +1,8 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, HTTPException
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
+from internal.errors.base_exception import AppException
+from internal.response.response import Response
 from internal.handler.user_handler import user_router
 from internal.handler.auth_handler import auth_router
 from internal.handler.society_handler import society_router
@@ -7,7 +10,6 @@ from internal.handler.feedback_handler import feedback_router
 from internal.handler.notice_handler import notice_router
 from internal.handler.invoice_handler import invoice_router
 from internal.handler.request_handler import request_router
-
 
 app = FastAPI()
 
@@ -23,58 +25,33 @@ app.include_router(notice_router)
 app.include_router(invoice_router)
 app.include_router(request_router)
 
+@app.exception_handler(AppException)
+async def app_exception_handler(request: Request, exc: AppException):
+    return JSONResponse(
+        status_code=exc.status_code,
+        content=Response.error_response(
+            error_code=exc.error_code,
+            message=exc.detail,
+        ),
+    )
 
-# from internal.dto.user import UpdateProfile 
+@app.exception_handler(HTTPException)
+async def http_exception_handler(request: Request, exc: HTTPException):
+    return JSONResponse(
+        status_code=exc.status_code,
+        content=Response.error_response(
+            error_code="SYS_001",
+            message=exc.detail,
+        ),
+    )
 
-# try:
-#     user: UpdateProfile = UpdateProfile(firstname="", middlename="", lastname="", mobilenumber="9876543211", email="nitrooblast@gmail.com")
-# except Exception as exception:
-#     print(exception)
+@app.exception_handler(Exception)
+async def unhandled_exception_handler(request: Request, exc: Exception):
+    return JSONResponse(
+        status_code=500,
+        content=Response.error_response(
+            error_code="SYS_001",
+            message="Internal server error",
+        ),
+    )
 
-
-# print(user)
-
-
-# @app.post("/user")
-# async def create_user(user_input: SignUpInput):
-#     user = User(**user_input.model_dump())
-#     return {
-#         "user_made": f"{user}"
-#     }
-
-
-# @app.post("/notice")
-# async def create_notice(notice_input: NoticeInput):
-#     now = datetime.utcnow()
-
-#     notice = Notice(
-#         **notice_input.model_dump(),
-#         date_issued=now,
-#         month=now.month,
-#         year=now.year,
-#     )
-
-#     return {"notice": f"{notice}"}
-
-
-# @app.post("/feedback")
-# async def create_feedback(feedback: FeedbackInput):
-#     return {"status": f"feedback with {feedback} created successfully"}
-
-
-# @app.post("/invoice")
-# async def create_invoice(invoice_input: InvoiceInput):
-#     now = datetime.utcnow()
-
-#     invoice = Invoice(
-#         **invoice_input.model_dump(),
-#         month = now.month, 
-#         year = now.year,
-#     )
-
-#     return {"invoice": f"{invoice}"}
-
-
-# @app.post("/request")
-# async def create_request(request: ServiceRequestInput):
-#     return {"status": f"service request with {request.time_slot} created successfully"}

@@ -8,20 +8,11 @@ class SocietyService:
         self.society_repository = society_repository_instance
 
     async def get_all_users_by_role(self, role: UserRole):
-        try:
-            users = await self.society_repository.get_all_users_by_role(role)
-        except HTTPException as exception:
-            raise exception 
-        except Exception as exception:
-            raise exception
+        
+        users = await self.society_repository.get_all_users_by_role(role)
         
         return users
     
     async def delete_user(self, id: UUID, role: UserRole):
 
-        try:
-            await self.society_repository.delete_user(id, role)
-        except HTTPException as exception:
-            raise exception 
-        except Exception as exception:
-            raise exception
+        await self.society_repository.delete_user(id, role)

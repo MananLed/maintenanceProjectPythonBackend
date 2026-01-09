@@ -1,6 +1,8 @@
 from fastapi import HTTPException, status
 from typing import List
 from internal.models.user import User, UserRole
+from internal.errors.base_exception import AppException
+from internal.constants.constants import *
 import asyncio
 from uuid import UUID
 
@@ -18,7 +20,7 @@ class SocietyRepository:
                 Parameters=[{"S": ("ROLE#" + role)}]
             )
         except:
-            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal Server Error")
+            raise AppException(SOCIETY_003)
 
         items = response["Items"]
 
@@ -49,16 +51,13 @@ class SocietyRepository:
             
             items = response.get("Items", [])
             if not items:
-                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+                raise AppException(SOCIETY_001)
             
             user_data = {k: self.deserializer.deserialize(v) for k, v in items[0].items()}
             email = user_data.get("email")
             
             if not email:
-                raise HTTPException(
-                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, 
-                    detail="User record is missing Email field"
-                )
+                raise AppException(SOCIETY_002)
 
             await asyncio.to_thread(
                 self.dynamodb.execute_transaction,
@@ -80,4 +79,4 @@ class SocietyRepository:
                 ]
             )
         except:
-            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal Server Error")
+            raise AppException(SOCIETY_004)

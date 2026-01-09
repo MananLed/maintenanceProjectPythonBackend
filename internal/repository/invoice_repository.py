@@ -1,6 +1,7 @@
-from fastapi import HTTPException, status
 from typing import List
 from internal.models.invoice import Invoice
+from internal.errors.base_exception import AppException
+from internal.constants.constants import *
 import uuid
 import asyncio
 
@@ -31,7 +32,7 @@ class InvoiceRepository:
                 Parameters=parameters
             )
         except:
-            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal Server Error")
+            raise AppException(INVOICE_001)
 
     async def get_all_invoices_by_month_and_year(self, year: int, month: int | None = None):
         if month is not None:
@@ -42,7 +43,7 @@ class InvoiceRepository:
                     Parameters=[{"S": "INVOICES"}, {"S": (str(year) + "#" + str(month))}]
                 )
             except:
-                raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal Server Error")
+                raise AppException(INVOICE_002)
         elif year == 0:
             try:
                 response = await asyncio.to_thread(
@@ -51,7 +52,7 @@ class InvoiceRepository:
                     Parameters=[{"S": "INVOICES"}]
                 )
             except:
-                raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal Server Error")
+                raise AppException(INVOICE_002)
         else:
             try:
                 response = await asyncio.to_thread(
@@ -60,7 +61,7 @@ class InvoiceRepository:
                     Parameters=[{"S": "INVOICES"}, {"S": str(year)}]
                 )
             except:
-                raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal Server Error")
+                raise AppException(INVOICE_002)
             
         items = response["Items"]
 

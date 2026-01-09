@@ -5,38 +5,29 @@ from internal.dto.user import (
 )
 from internal.response.response import Response
 from http import HTTPStatus
-from fastapi import HTTPException
 from internal.dependencies.dependencies import sns_client
-from internal.constants.constants import SERVER_ERROR, INVOICE_EMAIL_TOPIC_ARN
+from internal.constants.constants import INVOICE_EMAIL_TOPIC_ARN
 from internal.service import user_service_instance
 
 auth_router = APIRouter()
 
 
-@auth_router.post("/login", status_code=status.HTTP_201_CREATED)
+@auth_router.post("/login")
 async def login(login_input: LoginInput):
-    try:
-        response = await user_service_instance.get_user_by_email_and_password(login_input)
-    except HTTPException as exception:
-        return Response.error_response(exception.detail, exception.status_code)
-    except Exception as exception:
-        return Response.error_response(SERVER_ERROR, HTTPStatus.INTERNAL_SERVER_ERROR)
+    
+    response = await user_service_instance.get_user_by_email_and_password(login_input)
     
     return Response.success_response(response, "Login Successful", HTTPStatus.CREATED)
 
 
 @auth_router.post("/signup", status_code=status.HTTP_201_CREATED)
 async def signup(sign_in_input: SignInInput):
-    try:
-        await user_service_instance.add_user(sign_in_input)
-        sns_client.subscribe(
-            TopicArn= INVOICE_EMAIL_TOPIC_ARN,
-            Protocol="email",
-            Endpoint= str(sign_in_input.email)
-        )
-    except HTTPException as exception:
-        return Response.error_response(exception.detail, exception.status_code)
-    except Exception as exception:
-        return Response.error_response(SERVER_ERROR, HTTPStatus.INTERNAL_SERVER_ERROR)
+
+    await user_service_instance.add_user(sign_in_input)
+    sns_client.subscribe(
+        TopicArn= INVOICE_EMAIL_TOPIC_ARN,
+        Protocol="email",
+        Endpoint= str(sign_in_input.email)
+    )
     
     return Response.success_response(None, "Sign in Successful", HTTPStatus.CREATED)

@@ -1,4 +1,3 @@
-from fastapi import HTTPException
 from datetime import datetime
 from internal.dto.notice import NoticeInput
 from internal.models.notice import Notice
@@ -13,30 +12,17 @@ class NoticeService:
         now = datetime.utcnow()
 
         notice: Notice = Notice.model_construct(**notice_input.model_dump(), date_issued=now, month=now.month, year=now.year) 
-        
-        try:
-            await self.notice_repository.issue_notice(notice)
-        except HTTPException as exception:
-            raise exception 
-        except Exception as exception:
-            raise exception
+
+        await self.notice_repository.issue_notice(notice)
 
     async def get_all_notices(self):
-        try:
-            notices = await self.notice_repository.get_all_notices()
-        except HTTPException as exception:
-            raise exception 
-        except Exception as exception:
-            raise exception
+
+        notices = await self.notice_repository.get_all_notices()
         
         return notices
     
     async def get_all_notices_by_month_and_year(self, year: int, month: int | None = None):
-        try:
-            notices = await self.notice_repository.get_all_notices_by_month_and_year(year, month)
-        except HTTPException as exception:
-            raise exception
-        except Exception as exception:
-            raise exception
+
+        notices = await self.notice_repository.get_all_notices_by_month_and_year(year, month)
         
         return notices

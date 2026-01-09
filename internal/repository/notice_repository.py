@@ -2,6 +2,8 @@ from fastapi import HTTPException, status
 from datetime import datetime
 from typing import List
 from internal.models.notice import Notice
+from internal.errors.base_exception import AppException
+from internal.constants.constants import *
 import uuid
 import asyncio
 
@@ -36,9 +38,10 @@ class NoticeRepository:
                 Parameters=parameters
             )
         except:
-            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal Server Error")
+            raise AppException(NOTICE_001)
     
     async def get_all_notices(self):
+
         try:
             response = await asyncio.to_thread(
                 self.dynamodb.execute_statement,
@@ -46,7 +49,7 @@ class NoticeRepository:
                 Parameters=[{"S": "NOTICES"}]
             )
         except:
-            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal Server Error")
+            raise AppException(NOTICE_002)
 
         items = response["Items"]
 
@@ -75,7 +78,7 @@ class NoticeRepository:
                     Parameters=[{"S": "NOTICES"}, {"S": (str(year) + "#" + str(month))}]
                 )
             except:
-                raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal Server Error")
+                raise AppException(NOTICE_003)
         else:
             try:
                 response = await asyncio.to_thread(
@@ -84,7 +87,7 @@ class NoticeRepository:
                     Parameters=[{"S": "NOTICES"}, {"S": str(year)}]
                 )
             except:
-                raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal Server Error")
+                raise AppException(NOTICE_003)
         
         items = response["Items"]
 

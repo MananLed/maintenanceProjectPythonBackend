@@ -1,8 +1,8 @@
-from fastapi import Request, HTTPException, status
+from fastapi import Request
 from jose import jwt, JWTError
-from internal.response.response import Response
-from internal.constants.constants import SECRETKEY, ALGORITHM
+from internal.constants.constants import *
 from datetime import datetime, timedelta
+from internal.errors.base_exception import AppException
 
 def create_jwt_token(user_id, role, email, flat):
     encode = {"authorized":"true", "user_id":user_id, "role":role, "email":email, "flat":flat}
@@ -13,13 +13,13 @@ def create_jwt_token(user_id, role, email, flat):
 def verify_jwt(request: Request):
     auth_header = request.headers.get("Authorization")
     if not auth_header or not auth_header.startswith("Bearer "):
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Authorization header missing or invalid")
+        raise AppException(AUTH_001)
     
     token = auth_header.split(" ")[1]
 
     try:
         claims = jwt.decode(token, SECRETKEY, algorithms=[ALGORITHM])
     except JWTError:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired token")
+        raise AppException(AUTH_002)
     
     request.state.user = claims

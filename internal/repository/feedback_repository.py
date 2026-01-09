@@ -2,6 +2,8 @@ from fastapi import HTTPException, status
 from typing import List 
 from internal.models.feedback import Feedback
 from internal.models.service_request import Status
+from internal.errors.base_exception import AppException
+from internal.constants.constants import *
 import asyncio
 import uuid
 
@@ -19,7 +21,7 @@ class FeedbackRepository:
                 Parameters=[{"S": "FEEDBACKS"}]
             )
         except:
-            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal Server Error")
+            raise AppException(FEEDBACK_004)
 
         items = response["Items"]
 
@@ -45,7 +47,7 @@ class FeedbackRepository:
                 Parameters=[{"S": "FEEDBACKS"}, {"S": str(request_id)}]
             )
         except:
-            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal Server Error")
+            raise AppException(FEEDBACK_005)
 
         items = response["Items"]
 
@@ -109,4 +111,4 @@ class FeedbackRepository:
                 ]
             )
         except:
-            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal Server Error")
+            raise AppException(FEEDBACK_006)

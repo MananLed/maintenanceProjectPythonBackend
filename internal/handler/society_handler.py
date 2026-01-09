@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Request, HTTPException, Depends, Query
+from fastapi import APIRouter, Depends, Query
 from typing import Annotated
 from http import HTTPStatus
 from uuid import UUID
@@ -7,29 +7,21 @@ from internal.dto.user import OfficerDetails, SignInInput
 from internal.response.response import Response
 from internal.dependencies.dependencies import sqs_client
 from internal.utils.jwt import verify_jwt
+from internal.dependencies.authorization import require_roles
 from internal.service import society_service_instance, user_service_instance
-from internal.constants.constants import SERVER_ERROR, QUEUE_URL
+from internal.constants.constants import *
 import json
 
 
-society_router = APIRouter(dependencies=[Depends(verify_jwt)])
+society_router = APIRouter(dependencies=[Depends(verify_jwt), Depends(require_roles(UserRole.ROLEADMIN))])
 
 
 @society_router.get("/society/residents")
-async def get_residents(request: Request):
-    claims = request.state.user
+async def get_residents():
 
-    if claims.get("role") != UserRole.ROLEADMIN:
-        return Response.error_response("Unauthorized access", HTTPStatus.UNAUTHORIZED)
-
-    try:
-        residents = await society_service_instance.get_all_users_by_role(
-            UserRole.ROLERESIDENT
-        )
-    except HTTPException as exception:
-        return Response.error_response(exception.detail, exception.status_code)
-    except Exception as exception:
-        return Response.error_response(SERVER_ERROR, HTTPStatus.INTERNAL_SERVER_ERROR)
+    residents = await society_service_instance.get_all_users_by_role(
+        UserRole.ROLERESIDENT
+    )
 
     return Response.success_response(
         residents, "Residents fetched successfully", HTTPStatus.OK
@@ -37,20 +29,11 @@ async def get_residents(request: Request):
 
 
 @society_router.get("/society/officers")
-async def get_officers(request: Request):
-    claims = request.state.user
+async def get_officers():
 
-    if claims.get("role") != UserRole.ROLEADMIN:
-        return Response.error_response("Unauthorized access", HTTPStatus.UNAUTHORIZED)
-
-    try:
-        officers = await society_service_instance.get_all_users_by_role(
-            UserRole.ROLEOFFICER
-        )
-    except HTTPException as exception:
-        return Response.error_response(exception.detail, exception.status_code)
-    except Exception as exception:
-        return Response.error_response(SERVER_ERROR, HTTPStatus.INTERNAL_SERVER_ERROR)
+    officers = await society_service_instance.get_all_users_by_role(
+        UserRole.ROLEOFFICER
+    )
 
     return Response.success_response(
         officers, "Officers fetched successfully", HTTPStatus.OK
@@ -58,52 +41,30 @@ async def get_officers(request: Request):
 
 
 @society_router.delete("/credentials/officer")
-async def delete_officer(id: Annotated[UUID, Query()], request: Request):
-    claims = request.state.user
-
-    if claims.get("role") != UserRole.ROLEADMIN:
-        return Response.error_response("Unauthorized access", HTTPStatus.UNAUTHORIZED)
+async def delete_officer(id: Annotated[UUID, Query()]):
     
-    try:
-        await society_service_instance.delete_user(id, UserRole.ROLEOFFICER)
-    except HTTPException as exception:
-        return Response.error_response(exception.detail, exception.status_code)
-    except Exception as exception:
-        return Response.error_response(SERVER_ERROR, HTTPStatus.INTERNAL_SERVER_ERROR)
+    await society_service_instance.delete_user(id, UserRole.ROLEOFFICER)
     
     return Response.success_response(None, "Officer deleted successfully", HTTPStatus.OK)
 
 
 @society_router.delete("/credentials/resident")
-async def delete_resident(id: Annotated[UUID, Query()], request: Request):
-    claims = request.state.user
+async def delete_resident(id: Annotated[UUID, Query()]):
 
-    if claims.get("role") != UserRole.ROLEADMIN:
-        return Response.error_response("Unauthorized access", HTTPStatus.UNAUTHORIZED)
-    
-    try:
-        await society_service_instance.delete_user(id, UserRole.ROLERESIDENT)
-        msg_body = {
-            "userId": str(id)
-        }
-        sqs_client.send_message(
-            QueueUrl=QUEUE_URL,
-            MessageBody=json.dumps(msg_body)
-        )
-    except HTTPException as exception:
-        return Response.error_response(exception.detail, exception.status_code)
-    except Exception as exception:
-        return Response.error_response(SERVER_ERROR, HTTPStatus.INTERNAL_SERVER_ERROR)
+    await society_service_instance.delete_user(id, UserRole.ROLERESIDENT)
+    msg_body = {
+        "userId": str(id)
+    }
+    sqs_client.send_message(
+        QueueUrl=QUEUE_URL,
+        MessageBody=json.dumps(msg_body)
+    )
     
     return Response.success_response(None, "Resident deleted successfully", HTTPStatus.OK)
 
 
 @society_router.post("/officers")
-async def add_officer(officer_details_input: OfficerDetails, request: Request):
-    claims = request.state.user
-
-    if claims.get("role") != UserRole.ROLEADMIN:
-        return Response.error_response("Unauthorized access", HTTPStatus.UNAUTHORIZED)
+async def add_officer(officer_details_input: OfficerDetails):
 
     new_officer = SignInInput(
         first_name="xxxxxx",
@@ -115,12 +76,7 @@ async def add_officer(officer_details_input: OfficerDetails, request: Request):
         password=officer_details_input.password,
     )
 
-    try:
-        await user_service_instance.add_user(new_officer, True)
-    except HTTPException as exception:
-        return Response.error_response(exception.detail, exception.status_code)
-    except Exception as exception:
-        return Response.error_response(SERVER_ERROR, HTTPStatus.INTERNAL_SERVER_ERROR)
+    await user_service_instance.add_user(new_officer, True)
 
     return Response.success_response(
         None, "Officer created successfully", HTTPStatus.CREATED
@@ -128,20 +84,11 @@ async def add_officer(officer_details_input: OfficerDetails, request: Request):
 
 
 @society_router.get("/society/residents/count")
-async def get_resident_count(request: Request):
-    claims = request.state.user
+async def get_resident_count():
 
-    if claims.get("role") != UserRole.ROLEADMIN:
-        return Response.error_response("Unauthorized access", HTTPStatus.UNAUTHORIZED)
-
-    try:
-        residents = await society_service_instance.get_all_users_by_role(
-            UserRole.ROLERESIDENT
-        )
-    except HTTPException as exception:
-        return Response.error_response(exception.detail, exception.status_code)
-    except Exception as exception:
-        return Response.error_response(SERVER_ERROR, HTTPStatus.INTERNAL_SERVER_ERROR)
+    residents = await society_service_instance.get_all_users_by_role(
+        UserRole.ROLERESIDENT
+    )
 
     residents_count = len(residents)
 
@@ -151,20 +98,11 @@ async def get_resident_count(request: Request):
 
 
 @society_router.get("/society/officers/count")
-async def get_officer_count(request: Request):
-    claims = request.state.user
+async def get_officer_count():
 
-    if claims.get("role") != UserRole.ROLEADMIN:
-        return Response.error_response("Unauthorized access", HTTPStatus.UNAUTHORIZED)
-
-    try:
-        officers = await society_service_instance.get_all_users_by_role(
-            UserRole.ROLEOFFICER
-        )
-    except HTTPException as exception:
-        return Response.error_response(exception.detail, exception.status_code)
-    except Exception as exception:
-        return Response.error_response(SERVER_ERROR, HTTPStatus.INTERNAL_SERVER_ERROR)
+    officers = await society_service_instance.get_all_users_by_role(
+        UserRole.ROLEOFFICER
+    )
 
     officers_count = len(officers)
 

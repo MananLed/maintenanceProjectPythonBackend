@@ -1,95 +1,17 @@
 from internal.models.user import User, UserRole
-from fastapi import status, HTTPException
+from internal.errors.base_exception import AppException
+from internal.constants.constants import *
 import asyncio
 import uuid
 
 
 class UserRepository:
+
     def __init__(self, ddb_connection, table_name, deserializer):
         self.deserializer = deserializer()
         self.dynamodb = ddb_connection
         self.table_name = table_name
 
-        # get_all_user_details()
-
-        # dynamodb.execute_transaction(
-        #     TransactStatements = [
-        #         {
-        #             "Statement": """
-        #                 UPDATE INVENTORY
-        #                 SET stock = stock - ?
-        #                 WHERE productId = ?
-        #                 IF stock >= ?
-        #             """,
-        #             "Parameters":[
-        #                 {"N": "1"},
-        #                 {"S": "PROD#9"},
-        #                 {"N": "1"}
-        #             ]
-        #         },
-        #         {
-        #             "Statement": """
-        #                 INSERT INTO Orders VALUE {
-        #                     'orderId': ?,
-        #                     'userId': ?,
-        #                     'amount': ?
-        #                 }
-        #             """,
-        #             "Parameters": [
-        #                 {"S": "ORD#1001"},
-        #                 {"S": "user_123"},
-        #                 {"N": "500"}
-        #             ]
-        #         }
-        #     ]
-        # )
-
-        # def add_user(new_user: User):
-        #     statement = "INSERT INTO " + TABLENAME + " VALUE {'PK': ?, 'SK': ?, 'email': ?, 'first_name': ?, 'flat': ?, 'id': ?, 'middle_name': ?, 'last_name': ?, 'mobile_number': ?, 'password': ?, 'role': ?}"
-
-        #     try:
-        #         dynamodb.execute_transaction(
-        #             TransactStatements = [
-        #                 {
-        #                     "Statement": f"""
-        #                         {statement}
-        #                     """,
-        #                     "Parameters": [
-        #                         {"S": "USERS"},
-        #                         {"S": f"{new_user.email}#{new_user.id}"},
-        #                         {"S": f"{new_user.email}"},
-        #                         {"S": f"{new_user.first_name}"},
-        #                         {"S": f"{new_user.flat}"},
-        #                         {"S": f"{new_user.id}"},
-        #                         {"S": f"{new_user.middle_name}"},
-        #                         {"S": f"{new_user.last_name}"},
-        #                         {"S": f"{new_user.mobile_number}"},
-        #                         {"S": f"{new_user.password}"},
-        #                         {"S": f"{str(new_user.role)}"}
-        #                     ]
-        #                 },
-        #                 {
-        #                     "Statement": f"""
-        #                         {statement}
-        #                     """,
-        #                     "Parameters": [
-        #                         {"S": f"ROLE#{str(new_user.role)}"},
-        #                         {"S": f"{new_user.id}"},
-        #                         {"S": f"{new_user.email}"},
-        #                         {"S": f"{new_user.first_name}"},
-        #                         {"S": f"{new_user.flat}"},
-        #                         {"S": f"{new_user.id}"},
-        #                         {"S": f"{new_user.middle_name}"},
-        #                         {"S": f"{new_user.last_name}"},
-        #                         {"S": f"{new_user.mobile_number}"},
-        #                         {"S": f"{new_user.password}"},
-        #                         {"S": f"{str(new_user.role)}"}
-        #                     ]
-        #                 }
-        #             ]
-        #         )
-        #     except Exception:
-        #         raise Exception
 
     async def change_password(self, new_password: str, role: str, email: str, id: str):
         update_statement = (
@@ -119,10 +41,7 @@ class UserRepository:
                 ],
             )
         except Exception:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Internal Server Error",
-            )
+            raise AppException(USER_007)
 
     async def get_user_by_email(self, email: str):
         statement = (
@@ -136,17 +55,12 @@ class UserRepository:
                 Parameters=[{"S": "USERS"}, {"S": email}],
             )
         except Exception:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Internal Server Error",
-            )
+            raise AppException(USER_005)
 
         items = response["Items"]
 
         if len(items) == 0:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid Credentials"
-            )
+            raise AppException(USER_003)
 
         for item in items:
             user_details = {
@@ -199,10 +113,7 @@ class UserRepository:
                 ],
             )
         except Exception:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Internal Server Error",
-            )
+            raise AppException(USER_008)
 
     async def get_user_by_id_and_role(self, role: UserRole, id: uuid.UUID):
         statement = (
@@ -215,18 +126,13 @@ class UserRepository:
                 Statement=statement,
                 Parameters=[{"S": f"ROLE#{role.value}"}, {"S": str(id)}],
             )
-        except Exception as exception:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Internal Server Error",
-            )
+        except Exception:
+            raise AppException(USER_009)
 
         items = response["Items"]
 
         if len(items) == 0:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
-            )
+            raise AppException(USER_006)
 
         for item in items:
             user_details = {
@@ -281,38 +187,5 @@ class UserRepository:
                 self.dynamodb.execute_transaction,
                 TransactStatements= transact_statements
             )
-        except Exception as exception:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Internal Server Error",
-            )
-
-
-# def change_password(id, role, email, new_hashed_password):
-#     statement = "UPDATE " + TABLENAME + " SET password = ? WHERE PK = ? AND SK = ?"
-
-#     try:
-#         dynamodb.execute_transaction(
-#             TransactStatements = [
-#                 {
-#                     "Statement": f"""
-#                         {statement}
-#                     """,
-#                     "Parameters": [
-#                         {"S": f"{new_hashed_password}"},
-#                         {"S": f"ROLE#{str(role)}"},
-#                         {"S": f"{id}"}
-#                     ]
-#                 },
-#                 {
-#                     "Statement": f"""{statement}""",
-#                     "Parameters": [
-#                         {"S": f"{new_hashed_password}"},
-#                         {"S": "USERS"},
-#                         {"S": f"{email}#{id}"}
-#                     ]
-#                 }
-#             ]
-#         )
-#     except Exception:
-#         raise Exception
+        except Exception:
+            raise AppException(USER_010)

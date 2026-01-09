@@ -1,13 +1,11 @@
 from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
-
+from typing import Any
 
 class Response:
 
-    response_code_mapping = {401: 1001, 500: 1010}
-
     @classmethod
-    def success_response(cls, data, message, status_code):
+    def success_response(cls, data: Any, message: str, status_code: int):
 
         return JSONResponse(
             status_code=status_code,
@@ -15,12 +13,9 @@ class Response:
         )
 
     @classmethod
-    def error_response(cls, error_message, status_code):
-        return JSONResponse(
-            status_code=status_code,
-            content={
-                "status": "fail",
-                "message": error_message,
-                "errorcode": cls.response_code_mapping.get(status_code, 1011),
-            },
-        )
+    def error_response(cls, error_code: str, message: str):
+        return {
+            "status": "fail",
+            "errorcode": error_code,
+            "message": message,
+        }

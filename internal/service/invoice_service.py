@@ -1,4 +1,3 @@
-from fastapi import HTTPException
 from datetime import datetime
 from internal.dto.invoice import InvoiceInput
 from internal.models.invoice import Invoice
@@ -17,19 +16,11 @@ class InvoiceService:
             year = now.year,
         )
 
-        try:
-            await self.invoice_repository.issue_invoice(invoice)
-        except HTTPException as exception:
-            raise exception 
-        except Exception as exception:
-            raise exception
+        await self.invoice_repository.issue_invoice(invoice)
+
 
     async def get_all_invoices_by_month_and_year(self, year: int, month: int | None = None):
-        try:
-            invoices = await self.invoice_repository.get_all_invoices_by_month_and_year(year, month)
-        except HTTPException as exception:
-            raise exception
-        except Exception as exception:
-            raise exception
-        
+
+        invoices = await self.invoice_repository.get_all_invoices_by_month_and_year(year, month)
+
         return invoices

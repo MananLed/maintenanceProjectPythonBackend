@@ -1,6 +1,7 @@
 from internal.models.service_request import ServiceType, Status, ServiceRequest
 from internal.dto.service_request import RequestProviderInput
-from fastapi import HTTPException, status
+from internal.errors.base_exception import AppException
+from internal.constants.constants import *
 from typing import List
 import asyncio
 import uuid
@@ -27,11 +28,8 @@ class RequestRepository:
                 )
                 
                 if response.get("Items"):
-                    raise HTTPException(
-                        status_code=status.HTTP_400_BAD_REQUEST,
-                        detail=f"User already has a {check_status} request for this date"
-                    )
-
+                    raise AppException(REQUEST_006)
+                
             insert_statement = (
                 f"INSERT INTO \"{self.table_name}\" VALUE "
                 "{'PK': ?, 'SK': ?, 'assigned_to': ?, 'date': ?, 'feedback_given': ?, "
@@ -66,10 +64,8 @@ class RequestRepository:
                     }
                 ]
             )
-        except HTTPException as exception:
-            raise exception
-        except Exception as exception:
-            raise exception
+        except Exception:
+            raise AppException(REQUEST_011)
 
     async def update_request_status(self, status_: Status, request: ServiceRequest, assigned_to: RequestProviderInput | None = None):
         update_statement = f"UPDATE {self.table_name} SET status = ?, assigned_to = ? WHERE PK = ? AND SK = ?"
@@ -131,9 +127,8 @@ class RequestRepository:
                     }
                 ]
             )
-        except Exception as exception:
-            print(exception)
-            raise HTTPException(status_code = status.HTTP_500_INTERNAL_SERVER_ERROR, detail = "Internal Server Error")
+        except Exception:
+            raise AppException(REQUEST_012)
 
 
     async def get_requests_by_type_and_status(self, service_type: ServiceType, status: Status, resident_id: str | None = None):
@@ -148,7 +143,7 @@ class RequestRepository:
                 Parameters=[{"S": "REQUESTS"}, {"S": sk_prefix}]
             )
         except:
-            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal Server Error")
+            raise AppException(REQUEST_013)
 
         items = response["Items"]
 
@@ -173,12 +168,12 @@ class RequestRepository:
                 Parameters=[{"S": str(id)}, {"S": str(id)}]
             )
         except:
-            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal Server Error")
+            raise AppException(REQUEST_014)
         
         items = response["Items"]
 
         if len(items) == 0:
-            raise HTTPException(status_code = status.HTTP_404_NOT_FOUND, detail = "Request with given id not found.")
+            raise AppException(REQUEST_007)
         
         for item in items:
             request_details = {k: self.deserializer.deserialize(v) for k, v in item.items()}
@@ -215,7 +210,7 @@ class RequestRepository:
                 ]
             )
         except Exception:
-            raise HTTPException(status_code = status.HTTP_500_INTERNAL_SERVER_ERROR, detail = "Internal Server Error")
+            raise AppException(REQUEST_015)
         
     async def delete_request(self, service_request: ServiceRequest):
         delete_statement = f'DELETE FROM "{self.table_name}" WHERE PK = ? AND SK = ?'
@@ -245,4 +240,4 @@ class RequestRepository:
                 ]
             )
         except Exception:
-            raise HTTPException(status_code = status.HTTP_500_INTERNAL_SERVER_ERROR, detail = "Internal Server Error")
+            raise AppException(REQUEST_016)

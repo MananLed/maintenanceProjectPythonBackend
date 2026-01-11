@@ -93,7 +93,7 @@ def test_book_service_internal_error(client, mocker, override_jwt):
     body = response.json()
 
     assert body["status"] == "fail"
-    assert body["message"] == "Internal Server Error"
+    assert body["message"] == "Internal server error"
 
 
 def test_book_service_missing_slotid(client, override_jwt):
@@ -192,7 +192,7 @@ def test_cancel_service_request_unauthorized(client, mocker, override_jwt):
     body = response.json()
 
     assert body["status"] == "fail"
-    assert body["message"] == "Unauthorized Access"
+    assert body["message"] == "Unauthorized access"
 
 
 def test_cancel_service_request_not_pending(client, mocker, override_jwt):
@@ -214,11 +214,11 @@ def test_cancel_service_request_not_pending(client, mocker, override_jwt):
 
     response = client.delete(f"/service/cancel/{request_id}")
 
-    assert response.status_code == HTTPStatus.BAD_REQUEST
+    assert response.status_code == HTTPStatus.CONFLICT
     body = response.json()
 
     assert body["status"] == "fail"
-    assert body["message"] == "Only pending requests can be cancelled"
+    assert body["message"] == "Only pending request can be cancelled"
 
 
 def test_cancel_service_request_http_exception(client, mocker, override_jwt):
@@ -259,7 +259,7 @@ def test_cancel_service_request_internal_error(client, mocker, override_jwt):
     body = response.json()
 
     assert body["status"] == "fail"
-    assert body["message"] == "Internal Server Error"
+    assert body["message"] == "Internal server error"
 
 
 def test_cancel_service_request_invalid_uuid(client, override_jwt):
@@ -354,7 +354,7 @@ def test_reschedule_service_request_internal_error(client, mocker, override_jwt)
     body = response.json()
 
     assert body["status"] == "fail"
-    assert body["message"] == "Internal Server Error"
+    assert body["message"] == "Internal server error"
 
 
 def test_reschedule_service_request_invalid_uuid(client, override_jwt):
@@ -461,7 +461,7 @@ def test_approve_request_internal_error(client, mocker, override_jwt):
     assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
     body = response.json()
     assert body["status"] == "fail"
-    assert body["message"] == "Internal Server Error"
+    assert body["message"] == "Internal server error"
 
 
 def test_approve_request_invalid_uuid(client, override_jwt):
@@ -556,7 +556,7 @@ def test_complete_request_internal_error(client, mocker, override_jwt):
     assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
     body = response.json()
     assert body["status"] == "fail"
-    assert body["message"] == "Internal Server Error"
+    assert body["message"] == "Internal server error"
 
 
 def test_complete_request_invalid_uuid(client, override_jwt):
@@ -641,7 +641,7 @@ def test_get_all_requests_internal_error(client, mocker, override_jwt):
     assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
     body = response.json()
     assert body["status"] == "fail"
-    assert body["message"] == "Internal Server Error"
+    assert body["message"] == "Internal server error"
 
 
 def test_get_all_requests_http_exception(client, mocker, override_jwt):
@@ -673,7 +673,7 @@ def test_get_all_requests_internal_error(client, mocker, override_jwt):
     assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
     body = response.json()
     assert body["status"] == "fail"
-    assert body["message"] == "Internal Server Error"
+    assert body["message"] == "Internal server error"
 
 
 def test_get_all_requests_of_resident_success(client, mocker, override_jwt):
@@ -754,7 +754,7 @@ def test_get_all_requests_of_resident_internal_error(client, mocker, override_jw
     body = response.json()
 
     assert body["status"] == "fail"
-    assert body["message"] == "Internal Server Error"
+    assert body["message"] == "Internal server error"
 
 
 def test_get_requests_by_type_status_admin_success(client, mocker, override_jwt):
@@ -871,7 +871,7 @@ def test_get_requests_by_type_status_internal_error(client, mocker, override_jwt
 
     body = response.json()
     assert body["status"] == "fail"
-    assert body["message"] == "Internal Server Error"
+    assert body["message"] == "Internal server error"
 
 
 def test_get_available_time_slots_success(client, mocker, override_jwt):
@@ -941,7 +941,7 @@ def test_get_available_time_slots_internal_error(client, mocker, override_jwt):
 
     body = response.json()
     assert body["status"] == "fail"
-    assert body["message"] == "Internal Server Error"
+    assert body["message"] == "Internal server error"
 
 
 def test_get_available_time_slots_invalid_service_type(client, override_jwt):

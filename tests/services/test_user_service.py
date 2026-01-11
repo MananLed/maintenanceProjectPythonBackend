@@ -1,7 +1,8 @@
 import pytest
 from unittest.mock import AsyncMock
 from fastapi import HTTPException, status
-
+from internal.errors.base_exception import AppException
+from internal.constants.constants import *
 from internal.service.user_service import UserService
 from internal.dto.user import ChangePassword, LoginInput, SignInInput
 from internal.models.user import UserRole, User
@@ -475,7 +476,7 @@ async def test_add_user_user_already_exists(mocker, sign_in_input):
     with pytest.raises(HTTPException) as exc:
         await service.add_user(sign_in_input)
 
-    assert exc.value.status_code == status.HTTP_400_BAD_REQUEST
+    assert exc.value.status_code == status.HTTP_409_CONFLICT
     assert exc.value.detail == "User with given email already exists"
 
 
@@ -487,7 +488,7 @@ async def test_add_user_success_resident(mocker, sign_in_input):
         service,
         "get_user_by_email",
         new_callable=AsyncMock,
-        side_effect=HTTPException(status.HTTP_401_UNAUTHORIZED),
+        side_effect=AppException(USER_003),
     )
 
     mock_add_user = mocker.patch(
@@ -508,7 +509,7 @@ async def test_add_user_success_officer(mocker, sign_in_input):
         service,
         "get_user_by_email",
         new_callable=AsyncMock,
-        side_effect=HTTPException(status.HTTP_401_UNAUTHORIZED),
+        side_effect=AppException(USER_003),
     )
 
     mock_add_user = mocker.patch(
@@ -533,7 +534,7 @@ async def test_add_user_password_hash_failure(mocker, sign_in_input):
         service,
         "get_user_by_email",
         new_callable=AsyncMock,
-        side_effect=HTTPException(status.HTTP_401_UNAUTHORIZED),
+        side_effect=AppException(USER_003),
     )
 
     mocker.patch(
@@ -556,7 +557,7 @@ async def test_add_user_repository_http_exception(mocker, sign_in_input):
         service,
         "get_user_by_email",
         new_callable=AsyncMock,
-        side_effect=HTTPException(status.HTTP_401_UNAUTHORIZED),
+        side_effect=AppException(USER_003),
     )
 
     mocker.patch(
@@ -581,7 +582,7 @@ async def test_add_user_repository_exception(mocker, sign_in_input):
         service,
         "get_user_by_email",
         new_callable=AsyncMock,
-        side_effect=HTTPException(status.HTTP_401_UNAUTHORIZED),
+        side_effect=AppException(USER_003),
     )
 
     mocker.patch(

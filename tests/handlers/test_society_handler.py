@@ -1,6 +1,7 @@
 from http import HTTPStatus
 from uuid import uuid4
 from internal.models.user import UserRole
+from internal.constants.constants import *
 
 def test_get_residents_success(client, mocker, override_jwt):
     override_jwt(role="admin")
@@ -43,7 +44,7 @@ def test_get_residents_internal_error(client, mocker, override_jwt):
     assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
     body = response.json()
     assert body["status"] == "fail"
-    assert body["message"] == "Internal Server Error"
+    assert body["message"] == "Internal server error"
 
 def test_get_officers_success(client, mocker, override_jwt):
     override_jwt(role="admin")
@@ -88,9 +89,43 @@ def test_get_officers_internal_error(client, mocker, override_jwt):
     assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
     body = response.json()
     assert body["status"] == "fail"
-    assert body["message"] == "Internal Server Error"
+    assert body["message"] == "Internal server error"
 
-#delete credentials of resident to be tested
+from http import HTTPStatus
+from uuid import uuid4
+import json
+
+
+def test_delete_resident_success(client, mocker, override_jwt):
+    override_jwt(role="admin")
+    resident_id = str(uuid4())
+
+    mock_delete_user = mocker.patch(
+        "internal.handler.society_handler.society_service_instance.delete_user",
+        return_value=None,
+    )
+
+    mock_send_message = mocker.patch(
+        "internal.handler.society_handler.sqs_client.send_message",
+        return_value=None,
+    )
+
+    response = client.delete(
+        f"/credentials/resident?id={resident_id}",
+    )
+
+    assert response.status_code == HTTPStatus.OK
+
+    body = response.json()
+    assert body["status"] == "Success"
+    assert body["message"] == "Resident deleted successfully"
+    assert body["data"] is None
+
+    mock_send_message.assert_called_once_with(
+        QueueUrl=QUEUE_URL,
+        MessageBody=json.dumps({"userId": str(resident_id)})
+    )
+
 
 def test_delete_officer_success(client, mocker, override_jwt):
     override_jwt(role="admin")
@@ -133,7 +168,7 @@ def test_delete_officer_internal_error(client, mocker, override_jwt):
     assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
     body = response.json()
     assert body["status"] == "fail"
-    assert body["message"] == "Internal Server Error"
+    assert body["message"] == "Internal server error"
 
 
 def test_add_officer_success(client, mocker, override_jwt):
@@ -188,7 +223,7 @@ def test_add_officer_internal_error(client, mocker, override_jwt):
     assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
     body = response.json()
     assert body["status"] == "fail"
-    assert body["message"] == "Internal Server Error"
+    assert body["message"] == "Internal server error"
 
 
 def test_get_resident_count_success(client, mocker, override_jwt):
@@ -228,7 +263,7 @@ def test_get_resident_count_internal_error(client, mocker, override_jwt):
     assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
     body = response.json()
     assert body["status"] == "fail"
-    assert body["message"] == "Internal Server Error"
+    assert body["message"] == "Internal server error"
 
 
 def test_get_officer_count_success(client, mocker, override_jwt):
@@ -268,4 +303,4 @@ def test_get_officer_count_internal_error(client, mocker, override_jwt):
     assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
     body = response.json()
     assert body["status"] == "fail"
-    assert body["message"] == "Internal Server Error"
+    assert body["message"] == "Internal server error"

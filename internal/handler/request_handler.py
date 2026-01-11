@@ -36,7 +36,7 @@ async def delete_request(id: Annotated[UUID, Path()], claims = Depends(require_r
         raise AppException(REQUEST_001)
     
     if service_request.status != Status.STATUSPENDING:
-        return AppException(REQUEST_008)
+        raise AppException(REQUEST_008)
     
     await request_service_instance.delete_request(service_request)
     

@@ -1,4 +1,3 @@
-from fastapi import HTTPException, status 
 from typing import List 
 from internal.models.feedback import Feedback
 from internal.models.service_request import Status
@@ -112,3 +111,4 @@ class FeedbackRepository:
             )
         except:
             raise AppException(FEEDBACK_006)
+        

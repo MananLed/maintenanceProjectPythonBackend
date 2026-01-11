@@ -49,7 +49,7 @@ async def test_post_feedback_already_exists(mocker):
     with pytest.raises(HTTPException) as exc:
         await service.post_feedback(user, request_obj, rating=5, content="Great service")
         
-    assert exc.value.status_code == status.HTTP_400_BAD_REQUEST
+    assert exc.value.status_code == status.HTTP_409_CONFLICT
     assert exc.value.detail == "Feedback is already given"
 
 @pytest.mark.asyncio

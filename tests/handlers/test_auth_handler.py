@@ -1,4 +1,5 @@
 from fastapi import HTTPException, status
+from internal.constants.constants import *
 
 def test_login_success(client, mocker):
     mock_response = {
@@ -42,7 +43,7 @@ def test_login_invalid_credentials(client, mocker):
     body = response.json()
     assert body["status"] == "fail"
     assert body["message"] == "Invalid Credentials"
-    assert body["errorcode"] == 1001
+    assert body["errorcode"] == SYS_001
 
 
 def test_login_internal_server_error(client, mocker):
@@ -63,8 +64,8 @@ def test_login_internal_server_error(client, mocker):
 
     body = response.json()
     assert body["status"] == "fail"
-    assert body["message"] == "Internal Server Error"
-    assert body["errorcode"] == 1010
+    assert body["message"] == "Internal server error"
+    assert body["errorcode"] == SYS_001
 
 def test_login_invalid_email_format(client):
     response = client.post(
@@ -77,143 +78,157 @@ def test_login_invalid_email_format(client):
 
     assert response.status_code == 422
 
+def test_signup_success(client, mocker):
+    mock_add_user = mocker.patch(
+        "internal.handler.auth_handler.user_service_instance.add_user",
+        return_value=None,
+    )
 
-# def test_signup_success(client, mocker):
-#     mock_add_user = mocker.patch(
-#         "internal.handler.auth_handler.user_service_instance.add_user",
-#         return_value=None,
-#     )
+    mock_sns_subscribe = mocker.patch(
+        "internal.handler.auth_handler.sns_client.subscribe",
+        return_value=None,
+    )
 
-#     response = client.post(
-#         "/signup",
-#         json={
-#             "firstName": "John",
-#             "middleName": "A",
-#             "lastName": "Doe",
-#             "mobile": "9876543210",
-#             "email": "john.doe@example.com",
-#             "flat": "101",
-#             "password": "Strong@Password1",
-#         },
-#     )
+    response = client.post(
+        "/signup",
+        json={
+            "firstName": "John",
+            "middleName": "A",
+            "lastName": "Doe",
+            "mobile": "9876543210",
+            "email": "john.doe@example.com",
+            "flat": "101",
+            "password": "Strong@Password1",
+        },
+    )
 
-#     assert response.status_code == 201
+    assert response.status_code == 201
 
-#     body = response.json()
-#     assert body["status"] == "Success"
-#     assert body["message"] == "Sign in Successful"
-#     assert body["data"] is None
+    body = response.json()
+    assert body["status"] == "Success"
+    assert body["message"] == "Sign in Successful"
+    assert body["data"] is None
 
-#     mock_add_user.assert_called_once()
+    mock_add_user.assert_called_once()
+    mock_sns_subscribe.assert_called_once_with(
+        TopicArn=INVOICE_EMAIL_TOPIC_ARN,
+        Protocol="email",
+        Endpoint="john.doe@example.com",
+    )
 
-# from fastapi import HTTPException, status
 
-# def test_signup_email_already_exists(client, mocker):
-#     mocker.patch(
-#         "internal.handler.auth_handler.user_service_instance.add_user",
-#         side_effect=HTTPException(
-#             status_code=status.HTTP_401_UNAUTHORIZED,
-#             detail="User already exists",
-#         ),
-#     )
 
-#     response = client.post(
-#         "/signup",
-#         json={
-#             "firstName": "John",
-#             "middleName": "A",
-#             "lastName": "Doe",
-#             "mobile": "9876543210",
-#             "email": "john.doe@example.com",
-#             "flat": "101",
-#             "password": "Strong@Password1",
-#         },
-#     )
+def test_signup_email_already_exists(client, mocker):
+    mocker.patch(
+        "internal.handler.auth_handler.user_service_instance.add_user",
+        side_effect=HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User already exists",
+        ),
+    )
 
-#     assert response.status_code == 401
+    mock_sns_subscribe = mocker.patch(
+        "internal.handler.auth_handler.sns_client.subscribe",
+        return_value=None,
+    )
 
-#     body = response.json()
-#     assert body["status"] == "fail"
-#     assert body["message"] == "User already exists"
-#     assert body["errorcode"] == 1001
+    response = client.post(
+        "/signup",
+        json={
+            "firstName": "John",
+            "middleName": "A",
+            "lastName": "Doe",
+            "mobile": "9876543210",
+            "email": "john.doe@example.com",
+            "flat": "101",
+            "password": "Strong@Password1",
+        },
+    )
 
-# def test_signup_invalid_email(client):
-#     response = client.post(
-#         "/signup",
-#         json={
-#             "firstName": "John",
-#             "middleName": "",
-#             "lastName": "Doe",
-#             "mobile": "9876543210",
-#             "email": "invalid-email",
-#             "flat": "101",
-#             "password": "Strong@Password1",
-#         },
-#     )
+    assert response.status_code == 401
 
-#     assert response.status_code == 422
+    body = response.json()
+    assert body["status"] == "fail"
+    assert body["message"] == "User already exists"
+    assert body["errorcode"] == SYS_001
 
-# def test_signup_weak_password(client):
-#     response = client.post(
-#         "/signup",
-#         json={
-#             "firstName": "John",
-#             "middleName": "",
-#             "lastName": "Doe",
-#             "mobile": "9876543210",
-#             "email": "john@example.com",
-#             "flat": "101",
-#             "password": "weakpassword",
-#         },
-#     )
+def test_signup_invalid_email(client):
+    response = client.post(
+        "/signup",
+        json={
+            "firstName": "John",
+            "middleName": "",
+            "lastName": "Doe",
+            "mobile": "9876543210",
+            "email": "invalid-email",
+            "flat": "101",
+            "password": "Strong@Password1",
+        },
+    )
 
-#     assert response.status_code == 422
+    assert response.status_code == 422
 
-# def test_signup_missing_last_name(client):
-#     response = client.post(
-#         "/signup",
-#         json={
-#             "firstName": "John",
-#             "middleName": "",
-#             "mobile": "9876543210",
-#             "email": "john@example.com",
-#             "flat": "101",
-#             "password": "Strong@Password1",
-#         },
-#     )
+def test_signup_weak_password(client):
+    response = client.post(
+        "/signup",
+        json={
+            "firstName": "John",
+            "middleName": "",
+            "lastName": "Doe",
+            "mobile": "9876543210",
+            "email": "john@example.com",
+            "flat": "101",
+            "password": "weakpassword",
+        },
+    )
 
-#     assert response.status_code == 422
+    assert response.status_code == 422
 
-# def test_signup_invalid_flat(client):
-#     response = client.post(
-#         "/signup",
-#         json={
-#             "firstName": "John",
-#             "middleName": "",
-#             "lastName": "Doe",
-#             "mobile": "9876543210",
-#             "email": "john@example.com",
-#             "flat": "999",
-#             "password": "Strong@Password1",
-#         },
-#     )
+def test_signup_missing_last_name(client):
+    response = client.post(
+        "/signup",
+        json={
+            "firstName": "John",
+            "middleName": "",
+            "mobile": "9876543210",
+            "email": "john@example.com",
+            "flat": "101",
+            "password": "Strong@Password1",
+        },
+    )
 
-#     assert response.status_code == 422
+    assert response.status_code == 422
 
-# def test_signup_extra_field(client):
-#     response = client.post(
-#         "/signup",
-#         json={
-#             "firstName": "John",
-#             "middleName": "",
-#             "lastName": "Doe",
-#             "mobile": "9876543210",
-#             "email": "john@example.com",
-#             "flat": "101",
-#             "password": "Strong@Password1",
-#             "role": "admin",
-#         },
-#     )
+def test_signup_invalid_flat(client):
+    response = client.post(
+        "/signup",
+        json={
+            "firstName": "John",
+            "middleName": "",
+            "lastName": "Doe",
+            "mobile": "9876543210",
+            "email": "john@example.com",
+            "flat": "999",
+            "password": "Strong@Password1",
+        },
+    )
 
-#     assert response.status_code == 422
+    assert response.status_code == 422
+
+def test_signup_extra_field(client):
+    response = client.post(
+        "/signup",
+        json={
+            "firstName": "John",
+            "middleName": "",
+            "lastName": "Doe",
+            "mobile": "9876543210",
+            "email": "john@example.com",
+            "flat": "101",
+            "password": "Strong@Password1",
+            "role": "admin",
+        },
+    )
+
+    assert response.status_code == 422
 

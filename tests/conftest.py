@@ -4,11 +4,11 @@ from fastapi import Request
 from internal.utils.jwt import verify_jwt
 from app import app 
 import uuid
-
+from internal.constants.constants import *
 
 @pytest.fixture(scope="session")
 def client():
-    return TestClient(app)
+    return TestClient(app, raise_server_exceptions=False)
 
 @pytest.fixture
 def override_jwt():

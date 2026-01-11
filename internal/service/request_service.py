@@ -79,6 +79,8 @@ class RequestService:
     async def get_requests_by_type_and_status(self, service_type: ServiceType, status: Status, resident_id: str | None = None):
         
         requests: List[ServiceRequest] = await self.request_repository.get_requests_by_type_and_status(service_type, status, resident_id)
+        today_str = datetime.now().strftime("%d-%m-%Y")
+        requests: List[ServiceRequest] = [request for request in requests if request.date == today_str]
         
         return requests
     

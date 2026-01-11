@@ -64,6 +64,8 @@ class RequestRepository:
                     }
                 ]
             )
+        except AppException:
+            raise
         except Exception:
             raise AppException(REQUEST_011)
 
@@ -241,3 +243,5 @@ class RequestRepository:
             )
         except Exception:
             raise AppException(REQUEST_016)
+
+

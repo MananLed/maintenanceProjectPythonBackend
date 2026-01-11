@@ -1,6 +1,7 @@
 from internal.models.user import UserRole
 from http import HTTPStatus
 from fastapi import HTTPException
+from internal.constants.constants import *
 
 VALID_INVOICE_PAYLOAD = {
     "amount": 1500.50
@@ -12,115 +13,149 @@ MOCK_INVOICES = [
 ]
 
 
-# def test_issue_invoice_success_admin(client, mocker, override_jwt):
-#     override_jwt(role=UserRole.ROLEADMIN)
+def test_issue_invoice_success_admin(client, mocker, override_jwt):
+    override_jwt(role=UserRole.ROLEADMIN)
 
-#     mocker.patch(
-#         "internal.handler.invoice_handler.invoice_service_instance.issue_invoice",
-#         return_value=None,
-#     )
+    mock_issue_invoice = mocker.patch(
+        "internal.handler.invoice_handler.invoice_service_instance.issue_invoice",
+        return_value=None,
+    )
 
-#     response = client.post(
-#         "/invoices/issue",
-#         json=VALID_INVOICE_PAYLOAD,
-#     )
+    mock_sns_publish = mocker.patch(
+        "internal.handler.invoice_handler.sns_client.publish",
+        return_value=None,
+    )
 
-#     assert response.status_code == HTTPStatus.CREATED
-#     body = response.json()
+    response = client.post(
+        "/invoices/issue",
+        json=VALID_INVOICE_PAYLOAD,
+    )
 
-#     assert body["status"] == "Success"
-#     assert body["message"] == "Invoice issued successfully"
-#     assert body["data"] is None
+    assert response.status_code == HTTPStatus.CREATED
 
+    body = response.json()
+    assert body["status"] == "Success"
+    assert body["message"] == "Invoice issued successfully"
+    assert body["data"] is None
 
-# def test_issue_invoice_success_officer(client, mocker, override_jwt):
-#     override_jwt(role=UserRole.ROLEOFFICER)
-
-#     mocker.patch(
-#         "internal.handler.invoice_handler.invoice_service_instance.issue_invoice",
-#         return_value=None,
-#     )
-
-#     response = client.post(
-#         "/invoices/issue",
-#         json=VALID_INVOICE_PAYLOAD,
-#     )
-#     body = response.json()
-
-#     assert response.status_code == HTTPStatus.CREATED
-#     assert body["status"] == "Success"
-#     assert body["message"] == "Invoice issued successfully"
-#     assert body["data"] is None
+    mock_issue_invoice.assert_called_once()
+    mock_sns_publish.assert_called_once_with(
+        TopicArn=INVOICE_EMAIL_TOPIC_ARN,
+        Message=f"Bill of Rs. {VALID_INVOICE_PAYLOAD['amount']:.2f} is issued, please check your dashboard."
+    )
 
 
-# def test_issue_invoice_unauthorized(client,  override_jwt):
-#     override_jwt(role=UserRole.ROLERESIDENT)
 
-#     response = client.post(
-#         "/invoices/issue",
-#         json=VALID_INVOICE_PAYLOAD,
-#     )
+def test_issue_invoice_success_officer(client, mocker, override_jwt):
+    override_jwt(role=UserRole.ROLEOFFICER)
 
-#     assert response.status_code == HTTPStatus.UNAUTHORIZED
-#     body = response.json()
+    mock_issue_invoice = mocker.patch(
+        "internal.handler.invoice_handler.invoice_service_instance.issue_invoice",
+        return_value=None,
+    )
 
-#     assert body["status"] == "fail"
-#     assert body["message"] == "Unauthorized access"
+    mock_sns_publish = mocker.patch(
+        "internal.handler.invoice_handler.sns_client.publish",
+        return_value=None,
+    )
 
+    response = client.post(
+        "/invoices/issue",
+        json=VALID_INVOICE_PAYLOAD,
+    )
 
-# def test_issue_invoice_http_exception(client, mocker, override_jwt):
-#     override_jwt(role=UserRole.ROLEADMIN)
+    assert response.status_code == HTTPStatus.CREATED
 
-#     mocker.patch(
-#         "internal.handler.invoice_handler.invoice_service_instance.issue_invoice",
-#         side_effect=HTTPException(
-#             status_code=HTTPStatus.BAD_REQUEST,
-#             detail="Invalid invoice",
-#         ),
-#     )
+    body = response.json()
+    assert body["status"] == "Success"
+    assert body["message"] == "Invoice issued successfully"
+    assert body["data"] is None
 
-
-#     response = client.post(
-#         "/invoices/issue",
-#         json=VALID_INVOICE_PAYLOAD,
-#     )
-
-#     assert response.status_code == HTTPStatus.BAD_REQUEST
-#     body = response.json()
-
-#     assert body["status"] == "fail"
-#     assert body["message"] == "Invalid invoice"
+    mock_issue_invoice.assert_called_once()
+    mock_sns_publish.assert_called_once_with(
+        TopicArn=INVOICE_EMAIL_TOPIC_ARN,
+        Message=f"Bill of Rs. {VALID_INVOICE_PAYLOAD['amount']:.2f} is issued, please check your dashboard."
+    )
 
 
-# def test_issue_invoice_internal_error(client, mocker, override_jwt):
-#     override_jwt(role=UserRole.ROLEADMIN)
+def test_issue_invoice_unauthorized(client,  override_jwt):
+    override_jwt(role=UserRole.ROLERESIDENT)
 
-#     mocker.patch(
-#         "internal.handler.invoice_handler.invoice_service_instance.issue_invoice",
-#         side_effect=Exception("DB down"),
-#     )
+    response = client.post(
+        "/invoices/issue",
+        json=VALID_INVOICE_PAYLOAD,
+    )
 
-#     response = client.post(
-#         "/invoices/issue",
-#         json=VALID_INVOICE_PAYLOAD,
-#     )
+    assert response.status_code == HTTPStatus.UNAUTHORIZED
+    body = response.json()
 
-#     assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
-#     body = response.json()
-
-#     assert body["status"] == "fail"
-#     assert body["message"] == "Internal Server Error"
+    assert body["status"] == "fail"
+    assert body["message"] == "Unauthorized access"
 
 
-# def test_issue_invoice_invalid_amount(client, override_jwt):
-#     override_jwt(role=UserRole.ROLEADMIN)
+def test_issue_invoice_http_exception(client, mocker, override_jwt):
+    override_jwt(role=UserRole.ROLEADMIN)
 
-#     response = client.post(
-#         "/invoices/issue",
-#         json={"amount": -100},
-#     )
+    mocker.patch(
+        "internal.handler.invoice_handler.invoice_service_instance.issue_invoice",
+        side_effect=HTTPException(
+            status_code=HTTPStatus.BAD_REQUEST,
+            detail="Invalid invoice",
+        ),
+    )
 
-#     assert response.status_code == 422
+    mock_sns_publish = mocker.patch(
+        "internal.handler.invoice_handler.sns_client.publish",
+        return_value=None,
+    )
+
+
+    response = client.post(
+        "/invoices/issue",
+        json=VALID_INVOICE_PAYLOAD,
+    )
+
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+    body = response.json()
+
+    assert body["status"] == "fail"
+    assert body["message"] == "Invalid invoice"
+
+
+def test_issue_invoice_internal_error(client, mocker, override_jwt):
+    override_jwt(role=UserRole.ROLEADMIN)
+
+    mocker.patch(
+        "internal.handler.invoice_handler.invoice_service_instance.issue_invoice",
+        side_effect=Exception("DB down"),
+    )
+
+    mock_sns_publish = mocker.patch(
+        "internal.handler.invoice_handler.sns_client.publish",
+        return_value=None,
+    )
+
+    response = client.post(
+        "/invoices/issue",
+        json=VALID_INVOICE_PAYLOAD,
+    )
+
+    assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
+    body = response.json()
+
+    assert body["status"] == "fail"
+    assert body["message"] == "Internal server error"
+
+
+def test_issue_invoice_invalid_amount(client, override_jwt):
+    override_jwt(role=UserRole.ROLEADMIN)
+
+    response = client.post(
+        "/invoices/issue",
+        json={"amount": -100},
+    )
+
+    assert response.status_code == 422
 
 
 def test_get_invoices_by_month_year_success(client, mocker, override_jwt):
@@ -206,7 +241,7 @@ def test_get_invoices_internal_error(client, mocker, override_jwt):
     body = response.json()
 
     assert body["status"] == "fail"
-    assert body["message"] == "Internal Server Error"
+    assert body["message"] == "Internal server error"
 
 
 def test_get_invoices_invalid_year(client, override_jwt):

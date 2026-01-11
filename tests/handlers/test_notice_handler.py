@@ -111,7 +111,7 @@ def test_issue_notice_internal_error(client, mocker, override_jwt):
     assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
     body = response.json()
     assert body["status"] == "fail"
-    assert body["message"] == "Internal Server Error"
+    assert body["message"] == "Internal server error"
 
 
 def test_get_all_notices_success(client, mocker, override_jwt):
@@ -175,7 +175,7 @@ def test_get_all_notices_internal_error(client, mocker, override_jwt):
     body = response.json()
 
     assert body["status"] == "fail"
-    assert body["message"] == "Internal Server Error"
+    assert body["message"] == "Internal server error"
 
 
 def test_get_notices_by_year_success(client, mocker, override_jwt):
@@ -262,7 +262,7 @@ def test_get_notices_by_month_year_internal_error(client, mocker, override_jwt):
     body = response.json()
 
     assert body["status"] == "fail"
-    assert body["message"] == "Internal Server Error"
+    assert body["message"] == "Internal server error"
 
 
 def test_get_notices_invalid_year(client, override_jwt):

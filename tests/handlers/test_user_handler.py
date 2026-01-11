@@ -1,6 +1,9 @@
 from internal.models.user import User, UserRole
 from fastapi import HTTPException, status
-import uuid
+from http import HTTPStatus
+import uuid 
+import json 
+from internal.constants.constants import *
 
 def test_get_profile_success(client, mocker, override_jwt):
 
@@ -67,7 +70,7 @@ def test_get_profile_internal_error(client, mocker, override_jwt):
 
     body = response.json()
     assert body["status"] == "fail"
-    assert body["message"] == "Internal Server Error"
+    assert body["message"] == "Internal server error"
 
 def test_get_profile_missing_token(client):
     response = client.get("/profile")
@@ -75,7 +78,7 @@ def test_get_profile_missing_token(client):
     assert response.status_code == 401
 
     body = response.json()
-    assert body["detail"] == "Authorization header missing or invalid"
+    assert body["message"] == "Authorization header missing or invalid"
 
 def test_get_profile_invalid_token(client):
     response = client.get(
@@ -237,11 +240,68 @@ def test_change_password_internal_error(client, mocker, override_jwt):
 
     body = response.json()
     assert body["status"] == "fail"
-    assert body["message"] == "Internal Server Error"
+    assert body["message"] == "Internal server error"
 
 
-#delete profile to be tested
+def test_delete_profile_success(client, mocker, override_jwt):
+    user_id = uuid.uuid4()
 
+    override_jwt(
+        role="resident",
+        user_id=str(user_id)
+    )
+
+    mock_delete_user = mocker.patch(
+        "internal.handler.user_handler.society_service_instance.delete_user",
+        return_value=None,
+    )
+
+    mock_sqs_send = mocker.patch(
+        "internal.handler.user_handler.sqs_client.send_message",
+        return_value=None,
+    )
+
+    response = client.delete("/profile")
+
+    assert response.status_code == HTTPStatus.OK
+
+    body = response.json()
+    assert body["status"] == "Success"
+    assert body["message"] == "Profile deleted successfully"
+    assert body["data"] is None
+
+    mock_delete_user.assert_called_once_with(
+        user_id,
+        UserRole.ROLERESIDENT
+    )
+
+    mock_sqs_send.assert_called_once_with(
+        QueueUrl=QUEUE_URL,
+        MessageBody=json.dumps({"userId": str(user_id)})
+    )
+
+def test_delete_profile_service_failure(client, mocker, override_jwt):
+    user_id = uuid.uuid4()
+
+    override_jwt(
+        role=UserRole.ROLERESIDENT,
+        user_id=str(user_id)
+    )
+
+    mocker.patch(
+        "internal.handler.user_handler.society_service_instance.delete_user",
+        side_effect=HTTPException(status.HTTP_400_BAD_REQUEST, detail="ljflsjfl"),
+    )
+
+    mocker.patch(
+        "internal.handler.user_handler.sqs_client.send_message",
+        return_value=None,
+    )
+
+    response = client.delete("/profile")
+
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+    
 
 def test_update_profile_success(client, mocker, override_jwt):
 
@@ -331,7 +391,7 @@ def test_update_profile_internal_error(client, mocker, override_jwt):
     assert response.status_code == 500
     body = response.json()
     assert body["status"] == "fail"
-    assert body["message"] == "Internal Server Error"
+    assert body["message"] == "Internal server error"
 
 def test_update_profile_partial_update(client, mocker, override_jwt):
 
@@ -444,4 +504,4 @@ def test_update_profile_internal_error(client, mocker, override_jwt):
     assert response.status_code == 500
     body = response.json()
     assert body["status"] == "fail"
-    assert body["message"] == "Internal Server Error"
+    assert body["message"] == "Internal server error"

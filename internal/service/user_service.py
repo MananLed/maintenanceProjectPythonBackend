@@ -54,6 +54,7 @@ class UserService:
     
     
     async def add_user(self, sign_in_input: SignInInput, is_officer: bool | None = None):
+        sign_in_input.email = sign_in_input.email.lower()
         
         try:
             user: User = await self.get_user_by_email(sign_in_input.email)

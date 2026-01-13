@@ -25,6 +25,10 @@ app.include_router(notice_router)
 app.include_router(invoice_router)
 app.include_router(request_router)
 
+@app.get("/health")
+async def health_check():
+    return {"status": "ok"}
+
 @app.exception_handler(AppException)
 async def app_exception_handler(request: Request, exc: AppException):
     return JSONResponse(

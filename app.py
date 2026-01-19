@@ -1,7 +1,9 @@
-from fastapi import FastAPI, Request, HTTPException
+from fastapi import FastAPI, Request, HTTPException, status
+from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from internal.errors.base_exception import AppException
+from internal.constants.constants import *
 from internal.response.response import Response
 from internal.handler.user_handler import user_router
 from internal.handler.auth_handler import auth_router
@@ -39,12 +41,22 @@ async def app_exception_handler(request: Request, exc: AppException):
         ),
     )
 
+@app.exception_handler(RequestValidationError)
+async def app_exception_handler(request: Request, exc: RequestValidationError):
+    return JSONResponse(
+        status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+        content=Response.error_response(
+            error_code=SYS_001,
+            message=INVALID_DETAILS,
+        ),
+    )
+
 @app.exception_handler(HTTPException)
 async def http_exception_handler(request: Request, exc: HTTPException):
     return JSONResponse(
         status_code=exc.status_code,
         content=Response.error_response(
-            error_code="SYS_001",
+            error_code=SYS_001,
             message=exc.detail,
         ),
     )
@@ -52,10 +64,10 @@ async def http_exception_handler(request: Request, exc: HTTPException):
 @app.exception_handler(Exception)
 async def unhandled_exception_handler(request: Request, exc: Exception):
     return JSONResponse(
-        status_code=500,
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         content=Response.error_response(
-            error_code="SYS_001",
-            message="Internal server error",
+            error_code=SYS_001,
+            message=SERVER_ERROR,
         ),
     )
 

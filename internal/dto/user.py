@@ -14,9 +14,9 @@ class SignInInput(BaseModel):
     mobile_number: str = Field(
         min_length=10, max_length=10, pattern=r"^[6-9][0-9]{9}$", alias="mobile"
     )
-    email: EmailStr = Field(alias="email")
+    email: EmailStr = Field(alias="email", max_length=100)
     flat: str = Field(pattern=r"^[0-8]0[1-4]$", alias="flat")
-    password: str = Field(min_length=12, alias="password")
+    password: str = Field(min_length=12, alias="password", max_length=100)
 
     @field_validator("password")
     @classmethod
@@ -32,8 +32,17 @@ class LoginInput(BaseModel):
 
     model_config = ConfigDict(populate_by_name=True, extra="forbid", str_strip_whitespace=True, validate_assignment=True)
 
-    email: EmailStr = Field(alias="email")
-    password: str = Field(alias="password")
+    email: EmailStr = Field(alias="email", max_length=100, min_length=1)
+    password: str = Field(alias="password", max_length=100, min_length=12)
+
+    @field_validator("password")
+    @classmethod
+    def validate_password(cls, v: str):
+        if not PASSWORD_REGEX.match(v):
+            raise ValueError(
+                "Invalid Credentials"
+            )
+        return v
 
 
 class OfficerDetails(LoginInput):
@@ -54,8 +63,8 @@ class ChangePassword(BaseModel):
 
     model_config = ConfigDict(populate_by_name=True, extra="forbid", str_strip_whitespace=True, validate_assignment=True)
 
-    old_password: str = Field(alias="oldPassword")
-    new_password: str = Field(alias="newPassword")
+    old_password: str = Field(alias="oldPassword", max_length=100)
+    new_password: str = Field(alias="newPassword", max_length=100)
 
     @field_validator("new_password")
     @classmethod

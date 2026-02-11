@@ -15,7 +15,7 @@ class User(BaseModel):
     mobile_number: str = Field(alias="mobile_number")
     email: str = Field(alias="email")
     flat: str = Field(alias="flat")
-    password: str = Field(alias="password")
+    password: str = Field(alias="password", exclude=True)
     role: UserRole = Field(alias="role", default=UserRole.ROLERESIDENT)
     id: str = Field(alias="id", default_factory = lambda: str(uuid4()))
 

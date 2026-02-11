@@ -95,6 +95,10 @@ ERROR_REGISTRY: Dict[str, ErrorDefinition] = {
     REQUEST_014: db_exception,
     REQUEST_015: db_exception,
     REQUEST_016: db_exception,
+    REQUEST_017: ErrorDefinition(
+        http_status=status.HTTP_409_CONFLICT,
+        message="Request cannot be marked completed before the time slot is over"
+    ),
     USER_001: ErrorDefinition(
         http_status=status.HTTP_401_UNAUTHORIZED,
         message="Old password does'nt match"

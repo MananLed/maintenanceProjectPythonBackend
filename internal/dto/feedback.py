@@ -6,4 +6,4 @@ class FeedbackInput(BaseModel):
 
     rating: int = Field(ge=1, le=5, alias="rating")
     content: str = Field(default="", max_length=500, alias="content")
-    request_id: str = Field(alias="requestid")
+    request_id: str = Field(alias="requestid", max_length=1000)

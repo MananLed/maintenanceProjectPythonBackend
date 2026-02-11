@@ -73,6 +73,8 @@ class RequestService:
         elif status_ == Status.STATUSCOMPLETED:
             if request.status != Status.STATUSAPPROVED:
                 raise AppException(REQUEST_004)
+            elif not is_slot_in_past(request.time_slot, datetime.now().strftime("%d-%m-%Y")):
+                raise AppException(REQUEST_017)
         
         await self.request_repository.update_request_status(status_, request, assigned_to)
 

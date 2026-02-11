@@ -97,7 +97,7 @@ ERROR_REGISTRY: Dict[str, ErrorDefinition] = {
     REQUEST_016: db_exception,
     REQUEST_017: ErrorDefinition(
         http_status=status.HTTP_409_CONFLICT,
-        message="Request cannot be marked completed before the time slot is over"
+        message="Request cannot be marked completed before the time slot is started"
     ),
     USER_001: ErrorDefinition(
         http_status=status.HTTP_401_UNAUTHORIZED,

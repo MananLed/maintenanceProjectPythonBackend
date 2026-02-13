@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta, time
 from dataclasses import dataclass
 from internal.constants import constants
+from zoneinfo import ZoneInfo
 
 @dataclass
 class TimeSlot:
@@ -35,6 +36,22 @@ def generate_time_slots() -> list[TimeSlot]:
 def is_slot_in_past(slot_label: str, target_date_str: str) -> bool:
     start_time_str = slot_label.split(" - ")[0].strip()
 
-    slot_datetime = datetime.strptime(f"{target_date_str} {start_time_str}", "%d-%m-%Y %I:%M %p")
+    ist = ZoneInfo("Asia/Kolkata")
+
+    slot_datetime = datetime.strptime(f"{target_date_str} {start_time_str}", "%d-%m-%Y %I:%M %p").replace(tzinfo=ist)
     
-    return slot_datetime < datetime.now()
+    return slot_datetime < datetime.now(ist)
+
+def is_slot_in_past_for_approval(slot_label: str, target_date_str: str) -> bool:
+    start_time_str = slot_label.split(" - ")[0].strip()
+
+    ist = ZoneInfo("Asia/Kolkata")
+
+    slot_datetime = datetime.strptime(
+        f"{target_date_str} {start_time_str}",
+        "%d-%m-%Y %I:%M %p"
+    ).replace(tzinfo=ist)
+
+    approval_deadline = slot_datetime + timedelta(minutes=20)
+
+    return datetime.now(ist) > approval_deadline

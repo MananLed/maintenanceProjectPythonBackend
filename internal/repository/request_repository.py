@@ -129,7 +129,8 @@ class RequestRepository:
                     }
                 ]
             )
-        except Exception:
+        except Exception as e:
+            print(e)
             raise AppException(REQUEST_012)
 
 

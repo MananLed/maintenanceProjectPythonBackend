@@ -99,6 +99,10 @@ ERROR_REGISTRY: Dict[str, ErrorDefinition] = {
         http_status=status.HTTP_409_CONFLICT,
         message="Request cannot be marked completed before the time slot is started"
     ),
+    REQUEST_018: ErrorDefinition(
+        http_status=status.HTTP_409_CONFLICT,
+        message="Request past the time cannot be marked approved"
+    ),
     USER_001: ErrorDefinition(
         http_status=status.HTTP_401_UNAUTHORIZED,
         message="Old password does'nt match"

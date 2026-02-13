@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import List
 from uuid import UUID
 from internal.repository import request_repository_instance
@@ -6,7 +6,7 @@ from internal.models.service_request import ServiceType, Status, ServiceRequest
 from internal.errors.base_exception import AppException
 from internal.constants.constants import *
 from internal.dto.service_request import RequestProviderInput, ServiceRequestInput, RescheduleRequestInput
-from internal.utils.generate_time_slots import generate_time_slots, is_slot_in_past
+from internal.utils.generate_time_slots import generate_time_slots, is_slot_in_past, is_slot_in_past_for_approval
 
 class RequestService:
     def __init__(self):
@@ -70,6 +70,8 @@ class RequestService:
         if status_ == Status.STATUSAPPROVED:
             if request.status != Status.STATUSPENDING:
                 raise AppException(REQUEST_003)
+            elif is_slot_in_past_for_approval(request.time_slot, (datetime.now() + timedelta(minutes=20)).strftime("%d-%m-%Y")):
+                raise AppException(REQUEST_018)
         elif status_ == Status.STATUSCOMPLETED:
             if request.status != Status.STATUSAPPROVED:
                 raise AppException(REQUEST_004)
